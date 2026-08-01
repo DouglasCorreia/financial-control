@@ -1,4 +1,5 @@
 import { useForm } from 'react-hook-form'
+import { Link, useNavigate } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useAuthStore } from '@/stores/useAuthStore'
@@ -7,7 +8,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Link, useNavigate } from 'react-router-dom'
 
 const loginSchema = z.object({
   email: z.string().email('Digite um e-mail válido'),
@@ -40,7 +40,7 @@ export default function Login() {
 
   return (
     <main className="flex min-h-screen items-center justify-center p-4 border-none outline-none outline-color-transparent focus:outline-none focus:outline-color-transparent">
-      <Card className="w-full max-w-sm">
+      <Card className="w-full max-w-sm ring-0 shadow-[0_0_30px_rgba(0,0,0,0.15)]">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">
             Entrar
@@ -63,6 +63,7 @@ export default function Login() {
                 autoComplete="email"
                 aria-invalid={Boolean(errors.email)}
                 {...register('email')}
+                className="input"
               />
 
               {errors.email && (
@@ -82,6 +83,7 @@ export default function Login() {
                 autoComplete="current-password"
                 aria-invalid={Boolean(errors.password)}
                 {...register('password')}
+                className="input"
               />
 
               {errors.password && (
@@ -92,20 +94,24 @@ export default function Login() {
             </div>
 
             {authError && (
-              <p className="text-sm text-destructive">
+              <p className="text-sm text-center text-destructive space-y-2 bg-red-100 p-2 rounded-2xl">
                 {authError}
               </p>
             )}
 
-            <p>Não possui uma conta? <Link to="/cadastro" className="font-medium underline text-primary">Cadastre-se</Link></p>
-
             <Button
               type="submit"
-              className="w-full cursor-pointer"
+              className="btn-ok"
               disabled={isLoading}
             >
               {isLoading ? 'Entrando...' : 'Entrar'}
             </Button>
+
+            <p className="text-sm text-center text-muted-foreground">
+              Não possui uma conta? <Link to="/cadastro" className="font-medium underline text-primary">
+                Cadastre-se
+              </Link>
+            </p>
           </CardContent>
         </form>
       </Card>

@@ -3,6 +3,8 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
 
+@tailwind utilities;
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -126,6 +128,7 @@
 
 body {
   margin: 0;
+  padding: 0;
 }
 
 @theme inline {
@@ -207,8 +210,24 @@ body {
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;}
-  body {
-    @apply bg-background text-foreground;}
+    @apply border-border outline-ring/50;
+  }
+
+    body {
+    @apply bg-background text-foreground;
+  }
+
   html {
-    @apply font-sans;}}
+    @apply font-sans;
+  }
+}
+
+@layer utilities{
+  .btn-ok {
+    @apply w-full cursor-pointer text-white bg-green-500 rounded-2xl h-9 hover:bg-green-600 hover:text-white;
+  }
+
+  .input{
+    @apply w-full border-gray-300 rounded-2xl h-9 focus-visible:ring-offset-0 focus-visible:ring-2 focus-visible:ring-green-500
+  }
+}

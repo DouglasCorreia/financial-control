@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { useAuthStore } from '@/stores/useAuthStore'
-import { LoaderCircle } from "lucide-react"
 
 import Login from '@/pages/Login'
 import Dashboard from '@/pages/Dashboard'
@@ -12,14 +11,13 @@ import AppLayout from './layouts/AppLayout'
 
 function App() {
   const initialize = useAuthStore((state) => state.initialize)
-  const isLoading = useAuthStore((state) => state.isLoading)
   const user = useAuthStore((state) => state.user)
 
   useEffect(() => {
     let cleanup: (() => void) | undefined
     let isMounted = true
 
-    void initialize().then((unsubscribe) => {
+    initialize().then((unsubscribe) => {
       if (isMounted) {
         cleanup = unsubscribe
 
@@ -33,16 +31,6 @@ function App() {
       cleanup?.()
     }
   }, [initialize])
-
-  if (isLoading) {
-    return (
-      <>
-        <div className="flex min-h-screen items-center justify-center">
-          <LoaderCircle className="h-12 w-12 animate-spin text-green-300" />
-        </div>
-      </>
-    )
-  }
 
   return (
     <BrowserRouter>
