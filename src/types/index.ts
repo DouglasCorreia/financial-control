@@ -27,6 +27,16 @@ export type Expense = {
   created_at: string | null
 }
 
+export type ExpenseInput = Pick<
+  Expense,
+  | 'categoria_id'
+  | 'nome'
+  | 'descricao'
+  | 'valor'
+  | 'data_gasto'
+  | 'status_pagamento'
+>
+
 export type FinancialStore = {
   salary: Salary | null
   categories: Category[]
@@ -63,6 +73,17 @@ export type FinancialStore = {
     cor: string
   ) => Promise<boolean>
   deleteCategory: (
+    id: string
+  ) => Promise<boolean>
+  createExpense: (
+    userId: string,
+    expense: ExpenseInput
+  ) => Promise<boolean>
+  updateExpense: (
+    id: string,
+    expense: ExpenseInput
+  ) => Promise<boolean>
+  deleteExpense: (
     id: string
   ) => Promise<boolean>
 }

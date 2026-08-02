@@ -31,6 +31,7 @@ export default function Categories() {
     const createCategory = useFinancialStore((state) => state.createCategory)
     const updateCategory = useFinancialStore((state) => state.updateCategory)
     const deleteCategory = useFinancialStore((state) => state.deleteCategory)
+    const isLoading = useFinancialStore((state) => state.isLoading)
 
     const [formOpen, setFormOpen] = useState(false)
     const [editingCategory, setEditingCategory] = useState<Category | null>(null)
@@ -94,20 +95,34 @@ export default function Categories() {
     }
 
     return(
-        <>
-            <h1 className="text-2xl uppercase font-bold text-center mb-8">Categoria das despesas</h1>
+        <section className="w-full">
+            <div className="flex items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold">Categoria das despesas</h1>
 
-            {
-                categories.length === 0 && (
-                    <p className="mb-4">Nenhuma categoria cadastrada</p>
-                )
-            }
-
-            <div className="flex flex-wrap w-full justify-end">
+                    <p className="text-sm text-muted-foreground">Gerencie as categorias de suas despesas.</p>
+                </div>
+        
                 <Button className="btn-ok-w-max" type="button" onClick={handleCreate}>
                     <Plus /> Categoria
                 </Button>
             </div>
+
+            {isLoading && categories.length === 0 && (
+                <Card className="mt-4">
+                    <CardContent className="text-center text-muted-foreground">
+                        Carregando categorias...
+                    </CardContent>
+                </Card>
+            )}
+
+            {!isLoading && categories.length === 0 && (
+                <Card className="mt-4">
+                    <CardContent className="text-center text-muted-foreground">
+                        Nenhuma despesa cadastrada.
+                    </CardContent>
+                </Card>
+            )}
 
             <div
                 className={`grid grid-cols-1 gap-4 w-full ${categories.length > 0 ? 'mt-4' : 'mt-0' }`}
@@ -197,8 +212,9 @@ export default function Categories() {
                             <Button
                                 type="submit"
                                 className="btn-ok-w-max"
+                                disabled={isLoading}
                             >
-                                Salvar
+                                {isLoading ? 'Salvando...' : 'Salvar'}
                             </Button>
                         </DialogFooter>
                     </form>
@@ -247,6 +263,6 @@ export default function Categories() {
                         </AlertDialogFooter>
                     </AlertDialogContent>
             </AlertDialog>
-        </>
+        </section>
     )
 }

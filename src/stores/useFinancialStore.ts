@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { supabase } from "@/services/supabase";
-import type { FinancialStore } from '@/types'
+import type { ExpenseInput, FinancialStore } from '@/types'
 
 export const useFinancialStore = create<FinancialStore>((set) => ({
     salary: null,
@@ -191,6 +191,71 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
 
         set((state) => ({
             categories: state.categories.filter((category) => category.id !== id)
+        }))
+
+        return true
+    },
+
+    createExpense: async (userId, expense: ExpenseInput) => {
+        const { data, error } = await supabase
+            .from('expenses')
+            .insert({
+                user_id: userId,
+                ...expense,
+            })
+            .select()
+            .single()
+
+        if (error) {
+            set({ error: error.message })
+            return false
+        }
+
+        set((state) => ({
+            expenses: [data, ...state.expenses],
+            error: null,
+        }))
+
+        return true
+    },
+
+    updateExpense: async (id, expense: ExpenseInput) => {
+        const { data, error } = await supabase
+            .from('expenses')
+            .update(expense)
+            .eq('id', id)
+            .select()
+            .single()
+
+        if (error) {
+            set({ error: error.message })
+            return false
+        }
+
+        set((state) => ({
+            expenses: state.expenses.map((item) =>
+                item.id === id ? data : item,
+            ),
+            error: null,
+        }))
+
+        return true
+    },
+
+    deleteExpense: async (id) => {
+        const { error } = await supabase
+            .from('expenses')
+            .delete()
+            .eq('id', id)
+
+        if (error) {
+            set({ error: error.message })
+            return false
+        }
+
+        set((state) => ({
+            expenses: state.expenses.filter((item) => item.id !== id),
+            error: null,
         }))
 
         return true
