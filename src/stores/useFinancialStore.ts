@@ -110,4 +110,89 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
             isLoading: false,
         })
     },
+
+    loadCategories: async (userId) => {
+        set({ isLoading: true, error: null })
+
+        const { data, error } = await supabase
+            .from('categories')
+            .select('id, user_id, nome, cor, created_at')
+            .eq('user_id', userId)
+            .order('nome')
+
+        if (error) {
+            set({ isLoading: false, error: error.message })
+            
+            return
+        }
+
+        set({
+            categories: data ?? [],
+            isLoading: false,
+        })
+    },
+
+    createCategory: async (userId, nome, cor) => {
+        const { data, error } = await supabase
+            .from('categories')
+            .insert({
+                user_id: userId,
+                nome,
+                cor,
+            })
+            .select()
+            .single()
+
+        if (error) {
+            set({ error: error.message })
+            return false
+        }
+
+        set((state) => ({
+            categories: [...state.categories, data],
+        }))
+
+        return true
+     },
+
+    updateCategory: async (id, nome, cor) => {
+        const { data, error } = await supabase
+            .from('categories')
+            .update({ nome, cor })
+            .eq('id', id)
+            .select()
+            .single()
+
+        if (error) {
+            set({ error: error.message })
+            return false
+        }
+
+        set((state) => ({
+            categories: state.categories.map((category) =>
+            category.id === id ? data : category,
+            ),
+        }))
+
+        return true
+    },
+
+    deleteCategory: async (id) => {
+        const { error } = await supabase
+            .from('categories')
+            .delete()
+            .eq('id', id)
+
+        if (error) {
+            set({ error: error.message })
+            
+            return false
+        }
+
+        set((state) => ({
+            categories: state.categories.filter((category) => category.id !== id)
+        }))
+
+        return true
+    },
 }));

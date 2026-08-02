@@ -7,13 +7,7 @@ import { supabase } from '@/services/supabase'
 import { useAuthStore } from '@/stores/useAuthStore'
 
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
@@ -46,6 +40,7 @@ export default function Profile() {
     const user = useAuthStore((state) => state.user)
     const profile = useAuthStore((state) => state.profile)
     const setProfile = useAuthStore((state) => state.setProfile)
+    const isLoading = useAuthStore((state) => state.isLoading)
 
     const [nameMessage, setNameMessage] = useState('')
     const [passwordMessage, setPasswordMessage] = useState('')
@@ -148,8 +143,8 @@ export default function Profile() {
                             </p>
                         )}
 
-                        <Button className="btn-ok-w-max" type="submit">
-                            Salvar nome
+                        <Button className="btn-ok-w-max" type="submit" disabled={isLoading}>
+                             {isLoading ? 'Salvando...' : 'Salvar'}
                         </Button>
                     </form>
                 </CardContent>
@@ -211,8 +206,8 @@ export default function Profile() {
                             </p>
                         )}
 
-                        <Button className="btn-ok-w-max" type="submit">
-                            Alterar senha
+                        <Button className="btn-ok-w-max" type="submit" disabled={isLoading}>
+                             {isLoading ? 'Salvando...' : 'Salvar'}
                         </Button>
                     </form>
                 </CardContent>

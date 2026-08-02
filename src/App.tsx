@@ -11,6 +11,8 @@ import Register from './pages/Register'
 import AppLayout from './layouts/AppLayout'
 import Profile from './pages/Profile'
 import Budget from './pages/Budget'
+import Categories from './pages/Categories'
+import Expenses from './pages/Expenses'
 
 function App() {
   const initialize = useAuthStore((state) => state.initialize)
@@ -58,6 +60,8 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/budget" element={<Budget />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/expenses" element={<Expenses />} />
           </Route>
         </Route>
 

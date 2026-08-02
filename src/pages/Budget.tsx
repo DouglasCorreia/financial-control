@@ -8,15 +8,11 @@ import { useAuthStore } from '@/stores/useAuthStore'
 import { useFinancialStore } from '@/stores/useFinancialStore'
 
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+
+import GlobalLoading from '@/components/GlobalLoading'
 
 const salarySchema = z.object({
   valor: z.number().positive('Informe um salário maior que zero'),
@@ -69,6 +65,10 @@ export default function Budget(){
         setTimeout(() => {
             setSalaryMessage('')
         }, 3000)
+    }
+
+    if (isLoading) {
+        return <GlobalLoading />
     }
 
     return (

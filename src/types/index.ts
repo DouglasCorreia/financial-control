@@ -35,10 +35,36 @@ export type FinancialStore = {
   selectedYear: number
   isLoading: boolean
   error: string | null
-  setPeriod: (month: number, year: number) => void
-  loadExpenses: (userId: string) => Promise<void>
-  loadSalary: (userId: string) => Promise<void>
-  saveSalary: (userId: string, valor: number) => Promise<void>
+  setPeriod: (
+    month: number,
+    year: number
+  ) => void
+  loadExpenses: (
+    userId: string
+  ) => Promise<void>
+  loadSalary: (
+    userId: string
+  ) => Promise<void>
+  saveSalary: (
+    userId: string,
+    valor: number
+  ) => Promise<void>
+  loadCategories: (
+    userId: string
+  ) => Promise<void>
+  createCategory: (
+    userId: string,
+    nome: string,
+    cor: string
+  ) => Promise<boolean>
+  updateCategory: (
+    id: string,
+    nome: string,
+    cor: string
+  ) => Promise<boolean>
+  deleteCategory: (
+    id: string
+  ) => Promise<boolean>
 }
 
 export type Profile = {
@@ -55,8 +81,17 @@ export type AuthStore = {
   error: string | null
 
   initialize: () => Promise<() => void>
-  signIn: (email: string, password: string) => Promise<boolean>
-  signUp: (email: string, password: string, nome: string) => Promise<boolean>
+  signIn: (
+    email: string,
+    password: string
+  ) => Promise<boolean>
+  signUp: (
+    email: string,
+    password: string,
+    nome: string
+  ) => Promise<boolean>
   signOut: () => Promise<void>
-  setProfile: (profile: Profile | null) => void
+  setProfile: (
+    profile: Profile | null
+  ) => void
 }
