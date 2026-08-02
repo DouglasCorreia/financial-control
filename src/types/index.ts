@@ -1,20 +1,18 @@
 import type { Session, User } from '@supabase/supabase-js'
 
 export type Salary = {
-    id: string
-    user_id: string
-    mes: number
-    ano: number
-    valor: number
-    created_at: string | null
+  id: string
+  user_id: string
+  valor: number
+  created_at: string | null
 }
 
 export type Category = {
-    id: string
-    user_id: string
-    nome: string
-    cor: string | null
-    created_at: string | null
+  id: string
+  user_id: string
+  nome: string
+  cor: string | null
+  created_at: string | null
 }
 
 export type Expense = {
@@ -30,7 +28,7 @@ export type Expense = {
 }
 
 export type FinancialStore = {
-  salaries: Salary[]
+  salary: Salary | null
   categories: Category[]
   expenses: Expense[]
   selectedMonth: number
@@ -39,6 +37,8 @@ export type FinancialStore = {
   error: string | null
   setPeriod: (month: number, year: number) => void
   loadExpenses: (userId: string) => Promise<void>
+  loadSalary: (userId: string) => Promise<void>
+  saveSalary: (userId: string, valor: number) => Promise<void>
 }
 
 export type Profile = {
@@ -58,4 +58,5 @@ export type AuthStore = {
   signIn: (email: string, password: string) => Promise<boolean>
   signUp: (email: string, password: string, nome: string) => Promise<boolean>
   signOut: () => Promise<void>
+  setProfile: (profile: Profile | null) => void
 }

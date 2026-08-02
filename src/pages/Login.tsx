@@ -39,12 +39,12 @@ export default function Login() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-4 border-none outline-none outline-color-transparent focus:outline-none focus:outline-color-transparent">
-      <Card className="w-full max-w-sm ring-0 shadow-[0_0_30px_rgba(0,0,0,0.15)]">
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 border-none outline-none outline-color-transparent focus:outline-none focus:outline-color-transparent">
+      <Card className="card">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">
             Entrar
-        </CardTitle>
+          </CardTitle>
           
           <CardDescription className="text-center">
             Acesse sua conta para continuar
@@ -114,6 +114,19 @@ export default function Login() {
             </p>
           </CardContent>
         </form>
+      </Card>
+
+      <Card className="box-dashed w-full max-w-sm ring-0 mt-4">
+        <CardContent>
+          <CardDescription className="text-green-500">
+            <CardTitle className="text-sm font-semibold text-center">
+              Acesso conta teste
+            </CardTitle>
+
+            <p><b className="font-semibold">E-mail:</b> teste@teste.com</p>
+            <p><b className="font-semibold">Senha:</b> 123456$!D</p>
+          </CardDescription>
+        </CardContent>
       </Card>
     </main>
   )

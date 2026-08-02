@@ -3,15 +3,19 @@ import { useAuthStore } from '@/stores/useAuthStore'
 
 import Login from '@/pages/Login'
 import Dashboard from '@/pages/Dashboard'
+import GlobalLoading from '@/components/GlobalLoading'
 
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './routes/ProtectedRoute'
 import Register from './pages/Register'
 import AppLayout from './layouts/AppLayout'
+import Profile from './pages/Profile'
+import Budget from './pages/Budget'
 
 function App() {
   const initialize = useAuthStore((state) => state.initialize)
   const user = useAuthStore((state) => state.user)
+  const isLoading = useAuthStore((state) => state.isLoading)
 
   useEffect(() => {
     let cleanup: (() => void) | undefined
@@ -32,6 +36,10 @@ function App() {
     }
   }, [initialize])
 
+  if (isLoading) {
+    return <GlobalLoading />
+  }
+
   return (
     <BrowserRouter>
       <Routes>
@@ -48,6 +56,8 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/budget" element={<Budget />} />
           </Route>
         </Route>
 

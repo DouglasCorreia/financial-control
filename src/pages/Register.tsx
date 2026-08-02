@@ -124,7 +124,7 @@ export default function Register() {
                 className="input"
               />
 
-              <ul className="space-y-1 text-sm text-green-700 font-semibold bg-green-100 p-4 rounded-2xl text-muted-green-100 border-2 border-green-400 border-dashed">
+              <ul className="box-dashed">
                 <li>• Pelo menos 8 caracteres</li>
                 <li>• Uma letra maiúscula</li>
                 <li>• Uma letra minúscula</li>

@@ -3,7 +3,7 @@ import { supabase } from "@/services/supabase";
 import type { FinancialStore } from '@/types'
 
 export const useFinancialStore = create<FinancialStore>((set) => ({
-    salaries: [],
+    salary: null,
     categories: [],
     expenses: [],
 
@@ -47,5 +47,67 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
                 isLoading: false,
             })
         }
-    }
+    },
+
+    loadSalary: async (userId) => {
+        set({
+            isLoading: true,
+            error: null,
+        })
+
+        const { data, error } = await supabase
+            .from('salaries')
+            .select('id, user_id, valor, created_at')
+            .eq('user_id', userId)
+            .maybeSingle()
+
+        if (error) {
+            set({
+                isLoading: false,
+                error: error.message,
+            })
+
+            return
+        }
+
+        set({
+            salary: data,
+            isLoading: false,
+        })
+    },
+
+    saveSalary: async (userId, valor) => {
+        set({
+            isLoading: true,
+            error: null,
+        })
+
+        const { data, error } = await supabase
+            .from('salaries')
+            .upsert(
+            {
+                user_id: userId,
+                valor,
+            },
+            {
+                onConflict: 'user_id',
+            },
+            )
+            .select('id, user_id, valor, created_at')
+            .single()
+
+        if (error) {
+            set({
+            isLoading: false,
+            error: error.message,
+            })
+
+            return
+        }
+
+        set({
+            salary: data,
+            isLoading: false,
+        })
+    },
 }));

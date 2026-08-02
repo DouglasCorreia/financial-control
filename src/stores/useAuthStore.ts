@@ -162,4 +162,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
       error: null,
     })
   },
+
+  setProfile: (profile) => {
+    set({ profile })
+  },
 }))
