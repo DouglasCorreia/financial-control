@@ -72,7 +72,7 @@ export default function AppLayout() {
         </div>
       </header>
 
-      <main className="flex min-h-[calc(100vh-77px)] flex-col items-center container pt-12">
+      <main className="flex min-h-[calc(100vh-77px)] flex-col items-center container py-12">
         <Outlet />
       </main>
     </div>

@@ -12,8 +12,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-import GlobalLoading from '@/components/GlobalLoading'
-
 const salarySchema = z.object({
   valor: z.number().positive('Informe um salário maior que zero'),
 })
@@ -30,6 +28,7 @@ export default function Budget(){
     const error = useFinancialStore((state) => state.error)
 
     const [salaryMessage, setSalaryMessage] = useState('')  
+    const [isActionLoading, setIsActionLoading] = useState(false)
 
     const {
         control,
@@ -45,7 +44,7 @@ export default function Budget(){
 
     useEffect(() => {
         if (user) {
-        void loadSalary(user.id)
+            loadSalary(user.id)
         }
     }, [user, loadSalary])
 
@@ -55,20 +54,23 @@ export default function Budget(){
         })
     }, [salary, reset])
 
-    async function onSubmit(data: SalaryFormData) {
+    const onSubmit = async (data: SalaryFormData) => {
+        setIsActionLoading(true)
+
         if (!user) return
 
-        await saveSalary(user.id, data.valor)
+        try{
+            await saveSalary(user.id, data.valor)
 
-        setSalaryMessage('Salário atualizado com sucesso.')
+            setSalaryMessage('Salário atualizado com sucesso')
 
-        setTimeout(() => {
-            setSalaryMessage('')
-        }, 3000)
-    }
+            setTimeout(() => {
+                setSalaryMessage('')
+            }, 3000)
 
-    if (isLoading) {
-        return <GlobalLoading />
+        } finally{
+            setIsActionLoading(false)
+        }
     }
 
     return (
@@ -136,8 +138,8 @@ export default function Budget(){
                                 </p>
                             )}
 
-                            <Button className="btn-ok-w-max" type="submit" disabled={isLoading}>
-                                {isLoading ? 'Salvando...' : 'Salvar'}
+                            <Button className="btn-ok-w-max" type="submit" disabled={isLoading || isActionLoading}>
+                                {isActionLoading ? 'Salvando...' : 'Salvar'}
                             </Button>
                         </form>
                     </CardContent>

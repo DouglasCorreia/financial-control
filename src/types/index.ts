@@ -86,6 +86,9 @@ export type FinancialStore = {
   deleteExpense: (
     id: string
   ) => Promise<boolean>
+  deleteAllExpenses: (
+    userId: string
+  ) => Promise<boolean>
 }
 
 export type Profile = {

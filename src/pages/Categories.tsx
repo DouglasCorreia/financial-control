@@ -36,6 +36,7 @@ export default function Categories() {
     const [formOpen, setFormOpen] = useState(false)
     const [editingCategory, setEditingCategory] = useState<Category | null>(null)
     const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null)
+    const [isActionLoading, setIsActionLoading] = useState(false)
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm<CategoryFormData>({
         resolver: zodResolver(categorySchema),
@@ -52,6 +53,8 @@ export default function Categories() {
     }, [user, loadCategories])
 
     const handleCreate = () => {
+        if (isActionLoading) return
+
         setEditingCategory(null)
 
         reset({
@@ -63,6 +66,8 @@ export default function Categories() {
     }
 
     const handleEdit = (category: Category) => {
+        if (isActionLoading) return
+
         setEditingCategory(category)
 
         reset({
@@ -74,38 +79,62 @@ export default function Categories() {
     }
 
     const onSubmit = async (data: CategoryFormData) => {
-        if (!user) return
+        if (!user || isActionLoading) return
 
-        const success = editingCategory
-            ? await updateCategory(
-                editingCategory.id,
-                data.nome,
-                data.cor,
-            )
-            : await createCategory(
-                user.id,
-                data.nome,
-                data.cor,
-            )
+        setIsActionLoading(true)
 
-        if (success) {
-            setFormOpen(false)
-            reset()
+        try {
+            const success = editingCategory
+                ? await updateCategory(
+                    editingCategory.id,
+                    data.nome,
+                    data.cor,
+                )
+                : await createCategory(
+                    user.id,
+                    data.nome,
+                    data.cor,
+                )
+
+            if (success) {
+                setFormOpen(false)
+                reset()
+            }
+        } finally {
+            setIsActionLoading(false)
+        }
+    }
+
+    const confirmDelete = async () => {
+        if (!categoryToDelete || isActionLoading) return
+
+        setIsActionLoading(true)
+
+        try {
+            const success = await deleteCategory(categoryToDelete.id)
+
+            if (success) {
+                setCategoryToDelete(null)
+            }
+        } finally {
+            setIsActionLoading(false)
         }
     }
 
     return(
         <section className="w-full">
-            <div className="flex items-center justify-between gap-4">
+            <div className="sm:flex items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold">Categoria das despesas</h1>
 
                     <p className="text-sm text-muted-foreground">Gerencie as categorias de suas despesas.</p>
                 </div>
-        
-                <Button className="btn-ok-w-max" type="button" onClick={handleCreate}>
-                    <Plus /> Categoria
-                </Button>
+
+                <div className="mt-4 sm:mt-0 flex items-center gap-2">
+                    <Button className="btn-ok-w-max" type="button" onClick={handleCreate} disabled={isActionLoading || isLoading}>
+                        <Plus /> Categoria
+                    </Button>
+                </div>
             </div>
 
             {isLoading && categories.length === 0 && (
@@ -139,13 +168,13 @@ export default function Categories() {
                             <div className="col-span-12 sm:col-span-2">
                                 <div className="grid grid-cols-2 gap-2">
                                     <div className="col-span-1">
-                                        <Button className="btn-ok" type="button" onClick={() => handleEdit(category)}>
+                                        <Button className="btn-ok" type="button" onClick={() => handleEdit(category)} disabled={isActionLoading || isLoading}>
                                             <SquarePen />
                                         </Button>
                                     </div>
 
                                     <div className="col-span-1">
-                                        <Button className="btn-danger" type="button" variant="destructive" onClick={() => setCategoryToDelete(category)}>
+                                        <Button className="btn-danger" type="button" variant="destructive" onClick={() => setCategoryToDelete(category)} disabled={isActionLoading || isLoading}>
                                             <Trash />
                                         </Button>
                                     </div>
@@ -204,6 +233,7 @@ export default function Categories() {
                                 type="button"
                                 variant="outline"
                                 onClick={() => setFormOpen(false)}
+                                disabled={isActionLoading}
                                 className="btn-cancel-w-max"
                             >
                                 Cancelar
@@ -212,9 +242,9 @@ export default function Categories() {
                             <Button
                                 type="submit"
                                 className="btn-ok-w-max"
-                                disabled={isLoading}
+                                disabled={isLoading || isActionLoading}
                             >
-                                {isLoading ? 'Salvando...' : 'Salvar'}
+                                {isLoading || isActionLoading ? 'Salvando...' : 'Salvar'}
                             </Button>
                         </DialogFooter>
                     </form>
@@ -242,23 +272,14 @@ export default function Categories() {
                         </AlertDialogHeader>
 
                         <AlertDialogFooter className="bg-transparent border-0">
-                            <AlertDialogCancel className="btn-cancel-w-max">Cancelar</AlertDialogCancel>
+                            <AlertDialogCancel className="btn-cancel-w-max" disabled={isActionLoading}>Cancelar</AlertDialogCancel>
 
                             <AlertDialogAction
-                                onClick={async () => {
-                                    if (!categoryToDelete) return
-
-                                    const success = await deleteCategory(
-                                        categoryToDelete.id,
-                                    )
-
-                                    if (success) {
-                                        setCategoryToDelete(null)
-                                    }
-                                }}
+                                onClick={() => void confirmDelete()}
+                                disabled={isActionLoading}
                                 className="btn-danger-w-max"
                             >
-                                Excluir
+                                {isActionLoading ? 'Excluindo...' : 'Excluir'}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>

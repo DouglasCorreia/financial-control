@@ -15,6 +15,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
 
 const paymentStatuses = [
   { value: 'a_pagar', label: 'A Pagar' },
@@ -51,6 +60,8 @@ const expenseSchema = z.object({
 
 type ExpenseFormData = z.infer<typeof expenseSchema>
 
+const ITEMS_PER_PAGE = 30
+
 const today = () => new Date().toISOString().slice(0, 10)
 
 const formatCurrency = (value: number) =>
@@ -74,29 +85,71 @@ export default function Expenses() {
   const createExpense = useFinancialStore((state) => state.createExpense)
   const updateExpense = useFinancialStore((state) => state.updateExpense)
   const deleteExpense = useFinancialStore((state) => state.deleteExpense)
+  const deleteAllExpenses = useFinancialStore((state) => state.deleteAllExpenses)
   const isLoading = useFinancialStore((state) => state.isLoading)
   const error = useFinancialStore((state) => state.error)
 
   const [formOpen, setFormOpen] = useState(false)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null)
+  const [deleteAllOpen, setDeleteAllOpen] = useState(false)
+  const [isActionLoading, setIsActionLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
 
   const form = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseSchema),
-    defaultValues: {
-      nome: '',
-      descricao: '',
-      valor: 0,
-      data_gasto: today(),
-      categoria_id: '',
-      status_pagamento: 'a_pagar',
-    },
-  })
+      defaultValues: {
+        nome: '',
+        descricao: '',
+        valor: 0,
+        data_gasto: today(),
+        categoria_id: '',
+        status_pagamento: 'a_pagar',
+      },
+    })
 
-  const categoryById = useMemo(
-    () => new Map(categories.map((category) => [category.id, category])),
-    [categories],
-  )
+    const categoryById = useMemo(
+      () => new Map(categories.map((category) => [category.id, category])),
+      [categories],
+    )
+
+  const totalPages = Math.ceil(expenses.length / ITEMS_PER_PAGE)
+  const activePage = totalPages === 0
+    ? 1
+    : Math.min(currentPage, totalPages)
+
+  const visibleExpenses = useMemo(() => {
+    const start = (activePage - 1) * ITEMS_PER_PAGE
+
+    return expenses.slice(start, start + ITEMS_PER_PAGE)
+  }, [activePage, expenses])
+
+  const pageNumbers = useMemo(() => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, index) => index + 1)
+    }
+
+    const pages: Array<number | 'ellipsis-left' | 'ellipsis-right'> = [1]
+
+    if (activePage > 4) {
+      pages.push('ellipsis-left')
+    }
+
+    const firstVisiblePage = Math.max(2, activePage - 1)
+    const lastVisiblePage = Math.min(totalPages - 1, activePage + 1)
+
+    for (let page = firstVisiblePage; page <= lastVisiblePage; page += 1) {
+      pages.push(page)
+    }
+
+    if (activePage < totalPages - 3) {
+      pages.push('ellipsis-right')
+    }
+
+    pages.push(totalPages)
+
+    return pages
+  }, [activePage, totalPages])
 
   useEffect(() => {
     if (!user) return
@@ -105,7 +158,9 @@ export default function Expenses() {
     void loadExpenses(user.id)
   }, [user, loadCategories, loadExpenses])
 
-  function openCreateDialog() {
+  const openCreateDialog = () => {
+    if (isActionLoading) return
+
     setEditingExpense(null)
     form.reset({
       nome: '',
@@ -118,7 +173,9 @@ export default function Expenses() {
     setFormOpen(true)
   }
 
-  function openEditDialog(expense: Expense) {
+  const openEditDialog = (expense: Expense) => {
+    if (isActionLoading) return
+
     setEditingExpense(expense)
     form.reset({
       nome: expense.nome,
@@ -131,37 +188,70 @@ export default function Expenses() {
     setFormOpen(true)
   }
 
-  async function onSubmit(data: ExpenseFormData) {
-    if (!user) return
+  const onSubmit = async (data: ExpenseFormData) => {
+    if (!user || isActionLoading) return
 
-    const payload = {
-      ...data,
-      descricao: data.descricao.trim() || null,
-    }
+    setIsActionLoading(true)
 
-    const success = editingExpense
-      ? await updateExpense(editingExpense.id, payload)
-      : await createExpense(user.id, payload)
+    try {
+      const payload = {
+        ...data,
+        descricao: data.descricao.trim() || null,
+      }
 
-    if (success) {
-      setFormOpen(false)
-      form.reset()
+      const success = editingExpense
+        ? await updateExpense(editingExpense.id, payload)
+        : await createExpense(user.id, payload)
+
+      if (success) {
+        setFormOpen(false)
+        form.reset()
+
+        if (!editingExpense) {
+          setCurrentPage(1)
+        }
+      }
+    } finally {
+      setIsActionLoading(false)
     }
   }
 
-  async function confirmDelete() {
-    if (!expenseToDelete) return
+  const confirmDelete = async () => {
+    if (!expenseToDelete || isActionLoading) return
 
-    const success = await deleteExpense(expenseToDelete.id)
+    setIsActionLoading(true)
 
-    if (success) {
-      setExpenseToDelete(null)
+    try {
+      const success = await deleteExpense(expenseToDelete.id)
+
+      if (success) {
+        setExpenseToDelete(null)
+      }
+    } finally {
+      setIsActionLoading(false)
+    }
+  }
+
+  const confirmDeleteAll = async () => {
+    if (!user || isActionLoading) return
+
+    setIsActionLoading(true)
+
+    try {
+      const success = await deleteAllExpenses(user.id)
+
+      if (success) {
+        setDeleteAllOpen(false)
+        setCurrentPage(1)
+      }
+    } finally {
+      setIsActionLoading(false)
     }
   }
 
   return (
     <section className="w-full">
-      <div className="flex items-center justify-between gap-4">
+      <div className="sm:flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Despesas</h1>
           <p className="text-sm text-muted-foreground">
@@ -169,9 +259,21 @@ export default function Expenses() {
           </p>
         </div>
 
-        <Button className="btn-ok-w-max" type="button" onClick={openCreateDialog}>
+        <div className="mt-4 sm:mt-0 flex items-center gap-2">
+          <Button
+            className="btn-danger-w-max"
+            type="button"
+            variant="destructive"
+            disabled={expenses.length === 0 || isLoading || isActionLoading}
+            onClick={() => setDeleteAllOpen(true)}
+          >
+            <Trash2 /> Excluir todas
+          </Button>
+
+          <Button className="btn-ok-w-max" type="button" onClick={openCreateDialog} disabled={isLoading || isActionLoading}>
             <Plus /> Despesa
-        </Button>
+          </Button>
+        </div>
       </div>
 
       {error && (
@@ -195,9 +297,9 @@ export default function Expenses() {
       )}
 
       <div
-        className={`grid gap-4 md:grid-cols-2 ${expenses.length > 0 ? 'mt-4' : 'mt-0' }`}
+        className={`grid gap-4 md:grid-cols-3 ${expenses.length > 0 ? 'mt-4' : 'mt-0' }`}
     >
-        {expenses.map((expense) => {
+        {visibleExpenses.map((expense) => {
           const category = expense.categoria_id
             ? categoryById.get(expense.categoria_id)
             : undefined
@@ -210,7 +312,18 @@ export default function Expenses() {
             <Card key={expense.id}>
               <CardHeader className="flex-row items-start justify-between gap-4 space-y-0">
                 <div>
-                  <CardTitle>{expense.nome}</CardTitle>
+                  <span
+                    className={`mb-1 inline-flex w-fit items-center rounded-full px-2.5 py-1 text-xs font-semibold ${paymentStatus.className}`}
+                  >
+                    {paymentStatus.label}
+                  </span>
+
+                  <CardTitle className="font-bold">{expense.nome}</CardTitle>
+
+                  <p className="text-xl font-bold">
+                    {formatCurrency(expense.valor)}
+                  </p>
+
                   <CardDescription>
                     {category?.nome ?? 'Sem categoria'} · {formatDate(expense.data_gasto)}
                   </CardDescription>
@@ -218,38 +331,28 @@ export default function Expenses() {
 
                 <div className="flex gap-1">
                   <Button
+                    className="btn-edit-w-max"
                     type="button"
-                    size="icon-sm"
-                    variant="ghost"
                     onClick={() => openEditDialog(expense)}
+                    disabled={isLoading || isActionLoading}
                     aria-label={`Editar ${expense.nome}`}
                   >
                     <Pencil />
                   </Button>
 
                   <Button
+                    className="btn-danger-w-max"
                     type="button"
-                    size="icon-sm"
-                    variant="ghost"
                     onClick={() => setExpenseToDelete(expense)}
+                    disabled={isLoading || isActionLoading}
                     aria-label={`Excluir ${expense.nome}`}
                   >
-                    <Trash2 className="text-destructive" />
+                    <Trash2 />
                   </Button>
                 </div>
               </CardHeader>
 
               <CardContent className="space-y-2">
-                <p className="text-2xl font-bold">
-                  {formatCurrency(expense.valor)}
-                </p>
-
-                <span
-                  className={`inline-flex w-fit items-center rounded-full px-2.5 py-1 text-xs font-semibold ${paymentStatus.className}`}
-                >
-                  {paymentStatus.label}
-                </span>
-
                 {expense.descricao && (
                   <p className="text-sm text-muted-foreground">
                     {expense.descricao}
@@ -260,6 +363,57 @@ export default function Expenses() {
           )
         })}
       </div>
+
+      {totalPages > 1 && (
+        <div className="mt-6 space-y-3">
+          <p className="text-center text-sm text-muted-foreground">
+            Mostrando {(activePage - 1) * ITEMS_PER_PAGE + 1} a{' '}
+            {Math.min(activePage * ITEMS_PER_PAGE, expenses.length)} de{' '}
+            {expenses.length} despesas
+          </p>
+
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  type="button"
+                  className="text-green-500 hover:text-green-600 cursor-pointer"
+                  disabled={activePage === 1 || isActionLoading}
+                  onClick={() => setCurrentPage(activePage - 1)}
+                />
+              </PaginationItem>
+
+              {pageNumbers.map((page) => (
+                <PaginationItem key={page}>
+                  {typeof page === 'number' ? (
+                    <PaginationLink
+                      type="button"
+                      className="text-green-400 hover:text-green-500 border-green-500 bg-transparent cursor-pointer"
+                      isActive={page === activePage}
+                      disabled={isActionLoading}
+                      onClick={() => setCurrentPage(page)}
+                      aria-label={`Ir para a página ${page}`}
+                    >
+                      {page}
+                    </PaginationLink>
+                  ) : (
+                    <PaginationEllipsis />
+                  )}
+                </PaginationItem>
+              ))}
+
+              <PaginationItem>
+                <PaginationNext
+                  type="button"
+                  className="text-green-500 hover:text-green-600 cursor-pointer"
+                  disabled={activePage === totalPages || isActionLoading}
+                  onClick={() => setCurrentPage(activePage + 1)}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
 
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent>
@@ -374,16 +528,17 @@ export default function Expenses() {
                 type="button"
                 variant="outline"
                 onClick={() => setFormOpen(false)}
+                disabled={isActionLoading}
                 className="btn-cancel-w-max"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || isActionLoading}
                 className="btn-ok-w-max"
             >
-                {isLoading ? 'Salvando...' : 'Salvar'}
+                {isLoading || isActionLoading ? 'Salvando...' : 'Salvar'}
               </Button>
             </DialogFooter>
           </form>
@@ -405,13 +560,44 @@ export default function Expenses() {
           </AlertDialogHeader>
 
           <AlertDialogFooter className="bg-transparent border-0">
-            <AlertDialogCancel className="btn-cancel-w-max">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="btn-cancel-w-max" disabled={isActionLoading}>Cancelar</AlertDialogCancel>
 
             <AlertDialogAction
               className="btn-danger-w-max"
               onClick={() => void confirmDelete()}
+              disabled={isActionLoading}
             >
-              Excluir
+              {isActionLoading ? 'Excluindo...' : 'Excluir'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={deleteAllOpen}
+        onOpenChange={setDeleteAllOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Excluir todas as despesas?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              As {expenses.length} despesas serão excluídas permanentemente.
+              Essa ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter className="bg-transparent border-0">
+            <AlertDialogCancel className="btn-cancel-w-max" disabled={isActionLoading}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="btn-danger-w-max"
+              onClick={() => void confirmDeleteAll()}
+              disabled={isActionLoading}
+            >
+              {isActionLoading ? 'Excluindo...' : 'Excluir todas'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

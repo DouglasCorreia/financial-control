@@ -44,6 +44,7 @@ export default function Profile() {
 
     const [nameMessage, setNameMessage] = useState('')
     const [passwordMessage, setPasswordMessage] = useState('')
+    const [isActionLoading, setIsActionLoading] = useState(false)
 
     const nameForm = useForm<NameFormData>({
         resolver: zodResolver(nameSchema),
@@ -63,46 +64,60 @@ export default function Profile() {
     }, [profile, nameForm])
 
     const updateName = async (data: NameFormData) => {
-        if (!user) return
+        if (!user || isActionLoading) return
 
-        const { data: updatedProfile, error } = await supabase
-        .from('profiles')
-        .update({ nome: data.nome })
-        .eq('id', user.id)
-        .select('id, nome, created_at')
-        .single()
+        setIsActionLoading(true)
 
-        if (error) {
-            setNameMessage(error.message)
+        try {
+            const { data: updatedProfile, error } = await supabase
+            .from('profiles')
+            .update({ nome: data.nome })
+            .eq('id', user.id)
+            .select('id, nome, created_at')
+            .single()
 
-            return
+            if (error) {
+                setNameMessage(error.message)
+
+                return
+            }
+
+            setProfile(updatedProfile)
+            setNameMessage('Nome atualizado com sucesso')
+
+            setTimeout(() => {
+                setNameMessage('')
+            }, 3000)
+        } finally {
+            setIsActionLoading(false)
         }
-
-        setProfile(updatedProfile)
-        setNameMessage('Nome atualizado com sucesso.')
-
-        setTimeout(() => {
-            setNameMessage('')
-        }, 3000)
     }
 
     const updatePassword = async (data: PasswordFormData) => {
-        const { error } = await supabase.auth.updateUser({
-        password: data.password,
-        })
+        if (isActionLoading) return
 
-        if (error) {
-            setPasswordMessage(error.message)
-            
-            return
+        setIsActionLoading(true)
+
+        try {
+            const { error } = await supabase.auth.updateUser({
+                password: data.password,
+            })
+
+            if (error) {
+                setPasswordMessage(error.message)
+
+                return
+            }
+
+            passwordForm.reset()
+            setPasswordMessage('Senha atualizada com sucesso')
+
+            setTimeout(() => {
+                setPasswordMessage('')
+            }, 3000)
+        } finally {
+            setIsActionLoading(false)
         }
-
-        passwordForm.reset()
-        setPasswordMessage('Senha atualizada com sucesso.')
-
-        setTimeout(() => {
-            setPasswordMessage('')
-        }, 3000)
     }
 
     return (
@@ -143,8 +158,8 @@ export default function Profile() {
                             </p>
                         )}
 
-                        <Button className="btn-ok-w-max" type="submit" disabled={isLoading}>
-                             {isLoading ? 'Salvando...' : 'Salvar'}
+                        <Button className="btn-ok-w-max" type="submit" disabled={isLoading || isActionLoading}>
+                             {isLoading || isActionLoading ? 'Salvando...' : 'Salvar'}
                         </Button>
                     </form>
                 </CardContent>
@@ -206,8 +221,8 @@ export default function Profile() {
                             </p>
                         )}
 
-                        <Button className="btn-ok-w-max" type="submit" disabled={isLoading}>
-                             {isLoading ? 'Salvando...' : 'Salvar'}
+                        <Button className="btn-ok-w-max" type="submit" disabled={isLoading || isActionLoading}>
+                             {isActionLoading ? 'Atualizando...' : 'Salvar'}
                         </Button>
                     </form>
                 </CardContent>

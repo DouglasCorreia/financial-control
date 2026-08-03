@@ -260,4 +260,23 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
 
         return true
     },
+
+    deleteAllExpenses: async (userId) => {
+        const { error } = await supabase
+            .from('expenses')
+            .delete()
+            .eq('user_id', userId)
+
+        if (error) {
+            set({ error: error.message })
+            return false
+        }
+
+        set({
+            expenses: [],
+            error: null,
+        })
+
+        return true
+    },
 }));
