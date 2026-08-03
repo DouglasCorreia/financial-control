@@ -2,6 +2,10 @@
 
 Aplicação web para controle financeiro pessoal. O usuário pode cadastrar seu salário, organizar despesas por categorias, acompanhar pagamentos e visualizar um resumo da sua vida financeira por meio de cards e gráficos.
 
+## 🌐 Link de visualização
+
+[https://financial-control-nine-woad.vercel.app/](https://financial-control-nine-woad.vercel.app/)
+
 ## Funcionalidades
 
 ### Autenticação e perfil
