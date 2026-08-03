@@ -312,7 +312,7 @@ export default function Expenses() {
             <Card key={expense.id}>
               <CardHeader className="flex flex-wrap flex-row items-start justify-between gap-4 space-y-0">
                 <div>
-                  <div className='flex items-center gap-2'>
+                  <div className='flex max-md:flex-col items-start md:items-center gap-2'>
                     <span
                       className={`inline-block w-fit items-center rounded-full px-2.5 py-1 text-xs font-semibold ${paymentStatus.className}`}
                     >
@@ -435,7 +435,13 @@ export default function Expenses() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="nome">Nome</Label>
-              <Input id="nome" {...form.register('nome')} />
+
+              <Input
+                className="input"
+                id="nome"
+                {...form.register('nome')}
+              />
+              
               {form.formState.errors.nome && (
                 <p className="text-sm text-destructive">
                   {form.formState.errors.nome.message}
@@ -445,9 +451,10 @@ export default function Expenses() {
 
             <div className="space-y-2">
               <Label htmlFor="categoria_id">Categoria</Label>
+
               <select
                 id="categoria_id"
-                className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm"
+                className="h-9 w-full rounded-2xl border border-input bg-background px-3 text-sm"
                 {...form.register('categoria_id')}
               >
                 <option value="">Selecione uma categoria</option>
@@ -484,6 +491,7 @@ export default function Expenses() {
                     type="text"
                     inputMode="decimal"
                     placeholder="R$ 0,00"
+                    className="input"
                   />
                 )}
               />
@@ -498,6 +506,7 @@ export default function Expenses() {
               <div className="space-y-2">
                 <Label htmlFor="data_gasto">Data do gasto</Label>
                 <Input
+                  className="input"
                   id="data_gasto"
                   type="date"
                   {...form.register('data_gasto')}
@@ -508,7 +517,7 @@ export default function Expenses() {
                 <Label htmlFor="status_pagamento">Status</Label>
                 <select
                   id="status_pagamento"
-                  className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm"
+                  className="h-9 w-full rounded-2xl border border-input bg-background px-3 text-sm"
                   {...form.register('status_pagamento')}
                 >
                   {paymentStatuses.map((status) => (
