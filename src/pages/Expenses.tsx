@@ -11,7 +11,7 @@ import type { Expense } from '@/types'
 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -297,7 +297,7 @@ export default function Expenses() {
       )}
 
       <div
-        className={`grid gap-4 md:grid-cols-3 ${expenses.length > 0 ? 'mt-4' : 'mt-0' }`}
+        className={`grid gap-4 sm:grid-cols-2 md:grid-cols-3 ${expenses.length > 0 ? 'mt-4' : 'mt-0' }`}
     >
         {visibleExpenses.map((expense) => {
           const category = expense.categoria_id
@@ -310,28 +310,34 @@ export default function Expenses() {
 
           return (
             <Card key={expense.id}>
-              <CardHeader className="flex-row items-start justify-between gap-4 space-y-0">
+              <CardHeader className="flex flex-wrap flex-row items-start justify-between gap-4 space-y-0">
                 <div>
-                  <span
-                    className={`mb-1 inline-flex w-fit items-center rounded-full px-2.5 py-1 text-xs font-semibold ${paymentStatus.className}`}
-                  >
-                    {paymentStatus.label}
-                  </span>
+                  <div className='flex items-center gap-2'>
+                    <span
+                      className={`inline-block w-fit items-center rounded-full px-2.5 py-1 text-xs font-semibold ${paymentStatus.className}`}
+                    >
+                      {paymentStatus.label}
+                    </span>
 
-                  <CardTitle className="font-bold">{expense.nome}</CardTitle>
+                    <span className="bg-blue-300 text-white inline-block w-fit items-center rounded-full px-2.5 py-1 text-xs font-semibold">
+                      {formatDate(expense.data_gasto)}
+                    </span>
 
-                  <p className="text-xl font-bold">
+                    <span className="bg-gray-400 text-white inline-block w-fit items-center rounded-full px-2.5 py-1 text-xs font-semibold">
+                      {category?.nome ?? 'Sem categoria'}
+                    </span>
+                  </div>
+
+                  <CardTitle className="font-bold my-4 leading-none">{expense.nome}</CardTitle>
+
+                  <p className="text-xl font-bold leading-none m-0">
                     {formatCurrency(expense.valor)}
                   </p>
-
-                  <CardDescription>
-                    {category?.nome ?? 'Sem categoria'} · {formatDate(expense.data_gasto)}
-                  </CardDescription>
                 </div>
 
-                <div className="flex gap-1">
+                <div className="w-full grid grid-cols-2 gap-4">
                   <Button
-                    className="btn-edit-w-max"
+                    className="col-span-1 btn-edit"
                     type="button"
                     onClick={() => openEditDialog(expense)}
                     disabled={isLoading || isActionLoading}
@@ -341,7 +347,7 @@ export default function Expenses() {
                   </Button>
 
                   <Button
-                    className="btn-danger-w-max"
+                    className="col-span-1 btn-danger"
                     type="button"
                     onClick={() => setExpenseToDelete(expense)}
                     disabled={isLoading || isActionLoading}
@@ -523,10 +529,9 @@ export default function Expenses() {
               />
             </div>
 
-            <DialogFooter className="bg-transparent border-0">
+            <DialogFooter className="flex justify-end gap-4 flex-row max-xs:justify-center bg-transparent border-0">
               <Button
                 type="button"
-                variant="outline"
                 onClick={() => setFormOpen(false)}
                 disabled={isActionLoading}
                 className="btn-cancel-w-max"
@@ -559,7 +564,7 @@ export default function Expenses() {
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          <AlertDialogFooter className="bg-transparent border-0">
+          <AlertDialogFooter className="flex justify-end gap-4 flex-row max-xs:justify-center bg-transparent border-0">
             <AlertDialogCancel className="btn-cancel-w-max" disabled={isActionLoading}>Cancelar</AlertDialogCancel>
 
             <AlertDialogAction
@@ -588,7 +593,7 @@ export default function Expenses() {
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          <AlertDialogFooter className="bg-transparent border-0">
+          <AlertDialogFooter className="flex justify-end gap-4 flex-row max-xs:justify-center bg-transparent border-0">
             <AlertDialogCancel className="btn-cancel-w-max" disabled={isActionLoading}>
               Cancelar
             </AlertDialogCancel>

@@ -20,7 +20,37 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen bg-muted/30">
       <header className="border-b bg-background py-4">
-        <div className="container flex items-center justify-end">
+        <div className="container flex items-center justify-end md:justify-between">
+          <nav className="hidden lg:block">
+            <ul className="flex gap-4 text-xs text-gray-600 [&>li>*]:font-semibold [&>li>*]:transition-colors [&>li>*]:hover:text-green-400">
+                <li>
+                  <Link onClick={closeMenu} className="block cursor-pointer" to="/dashboard">Dashboard</Link>
+                </li>
+
+                <li>
+                  <Link onClick={closeMenu} className="block cursor-pointer" to="/categories">Categoria das despesas</Link>
+                </li>
+
+                <li>
+                  <Link onClick={closeMenu} className="block cursor-pointer" to="/expenses">Despesas</Link>
+                </li>
+
+                <li>
+                  <Link onClick={closeMenu} className="block cursor-pointer" to="/budget">Salário</Link>
+                </li>
+
+                <li>
+                  <Link onClick={closeMenu} className="block cursor-pointer" to="/profile">Editar perfil</Link>
+                </li>
+
+                <li>
+                  <span className="cursor-pointer block" onClick={() => signOut()}>
+                    Sair
+                  </span>
+                </li>
+              </ul>
+          </nav>
+
           <div className="relative group">
             <p
               className="flex items-center justify-center gap-4 bg-green-400 rounded-full size-9 text-white font-bold cursor-pointer"

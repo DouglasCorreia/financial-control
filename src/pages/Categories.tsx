@@ -228,10 +228,9 @@ export default function Categories() {
                             />
                         </div>
 
-                        <DialogFooter className="bg-transparent border-0">
+                        <DialogFooter className="flex justify-end gap-4 flex-row max-xs:justify-center bg-transparent border-0">
                             <Button
                                 type="button"
-                                variant="outline"
                                 onClick={() => setFormOpen(false)}
                                 disabled={isActionLoading}
                                 className="btn-cancel-w-max"
@@ -271,7 +270,7 @@ export default function Categories() {
                             </AlertDialogDescription>
                         </AlertDialogHeader>
 
-                        <AlertDialogFooter className="bg-transparent border-0">
+                        <AlertDialogFooter className="flex justify-end gap-4 flex-row max-xs:justify-center bg-transparent border-0">
                             <AlertDialogCancel className="btn-cancel-w-max" disabled={isActionLoading}>Cancelar</AlertDialogCancel>
 
                             <AlertDialogAction
