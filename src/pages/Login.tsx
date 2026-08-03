@@ -124,7 +124,7 @@ export default function Login() {
             </CardTitle>
 
             <p><b className="font-semibold">E-mail:</b> teste@teste.com</p>
-            <p><b className="font-semibold">Senha:</b> 123456$!D</p>
+            <p><b className="font-semibold">Senha:</b> 123456$!Dd</p>
           </CardDescription>
         </CardContent>
       </Card>
