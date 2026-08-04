@@ -8,9 +8,17 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: 24
+
 jobs:
   validate:
+    name: Validate
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Baixar código
@@ -19,14 +27,25 @@ jobs:
       - name: Configurar Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
+
+      - name: Informações do ambiente
+        run: |
+          node --version
+          npm --version
 
       - name: Instalar dependências
         run: npm ci
 
       - name: Executar lint
         run: npm run lint
+
+      - name: Executar testes
+        run: npm test
+
+      - name: Auditoria de segurança
+        run: npm audit --audit-level=high
 
       - name: Gerar build
         run: npm run build
