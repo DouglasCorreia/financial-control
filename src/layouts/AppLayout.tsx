@@ -19,7 +19,7 @@ export default function AppLayout() {
   
   return (
     <div className="min-h-screen bg-muted/30">
-      <header className="border-b bg-background py-4">
+      <header className="sticky top-0 border-b border-gray-200 bg-background py-4 z-10">
         <div className="container flex items-center justify-end md:justify-between">
           <nav className="hidden lg:block">
             <ul className="flex gap-4 text-xs text-gray-600 [&>li>*]:font-semibold [&>li>*]:transition-colors [&>li>*]:hover:text-green-400">

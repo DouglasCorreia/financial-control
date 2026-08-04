@@ -1,7 +1,10 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useAuthStore } from '@/stores/useAuthStore'
+
+import { Check, Eye, EyeOff, LoaderCircle, Lock, Mail, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -31,11 +34,16 @@ const registerSchema = z
 
 type RegisterFormData = z.infer<typeof registerSchema>
 
+const specialCharacterRegex = /[!@#$%^&*(),.?":{}|<>_\-\\[\]/+=;']/
+
 export default function Register() {
   const signUp = useAuthStore((state) => state.signUp)
   const isLoading = useAuthStore((state) => state.isLoading)
   const authError = useAuthStore((state) => state.error)
   const navigate = useNavigate()
+
+  const [lockPassword, setLockPassword] = useState(true)
+  const [password, setPassword] = useState('')
 
   const {
     register,
@@ -45,7 +53,34 @@ export default function Register() {
     resolver: zodResolver(registerSchema),
   })
 
-  async function onSubmit(data: RegisterFormData) {
+  const passwordField = register('password', {
+    onChange: (event) => setPassword(event.target.value),
+  })
+
+  const passwordRules = [
+    {
+      label: 'Pelo menos 8 caracteres',
+      valid: password.length >= 8,
+    },
+    {
+      label: 'Uma letra maiúscula',
+      valid: /[A-Z]/.test(password),
+    },
+    {
+      label: 'Uma letra minúscula',
+      valid: /[a-z]/.test(password),
+    },
+    {
+      label: 'Um número',
+      valid: /\d/.test(password),
+    },
+    {
+      label: 'Um caractere especial',
+      valid: specialCharacterRegex.test(password),
+    },
+  ]
+
+  const onSubmit = async (data: RegisterFormData) => {
     const success = await signUp(
       data.nome,
       data.email,
@@ -55,6 +90,10 @@ export default function Register() {
     if (success) {
       navigate('/dashboard', { replace: true })
     }
+  }
+
+  const toogleIcon = () => {
+    setLockPassword((prev) => !prev);
   }
 
   return (
@@ -94,15 +133,19 @@ export default function Register() {
             <div className="space-y-2">
               <Label htmlFor="email">E-mail</Label>
 
-              <Input
-                id="email"
-                type="email"
-                placeholder="voce@email.com"
-                autoComplete="email"
-                aria-invalid={Boolean(errors.email)}
-                {...register('email')}
-                className="input"
-              />
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-300" />
+
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="voce@email.com"
+                  autoComplete="email"
+                  aria-invalid={Boolean(errors.email)}
+                  {...register('email')}
+                  className="input pl-8.5"
+                />
+              </div>
 
               {errors.email && (
                 <p className="text-sm text-destructive">
@@ -114,22 +157,42 @@ export default function Register() {
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
 
-              <Input
-                id="password"
-                type="password"
-                placeholder="Digite sua senha"
-                autoComplete="current-password"
-                aria-invalid={Boolean(errors.password)}
-                {...register('password')}
-                className="input"
-              />
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-300" />
 
-              <ul className="box-dashed">
-                <li>• Pelo menos 8 caracteres</li>
-                <li>• Uma letra maiúscula</li>
-                <li>• Uma letra minúscula</li>
-                <li>• Um número</li>
-                <li>• Um caractere especial</li>
+                <Input
+                  id="password"
+                  type={lockPassword ? "password" : "text"}
+                  placeholder="Digite sua senha"
+                  autoComplete="current-password"
+                  aria-invalid={Boolean(errors.password)}
+                  {...passwordField}
+                  className="input pl-8.5"
+                />
+
+                <div className="absolute right-3 top-1/2 h-4 w- -translate-y-1/2 cursor-pointer" onClick={() => toogleIcon()}>
+                  <Eye className={`${lockPassword ? "hidden" : "block"} absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-300`} />
+
+                  <EyeOff className={`${lockPassword ? "block" : "hidden"} absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-300`} />
+                </div>
+              </div>
+
+              <ul className="space-y-1">
+                {passwordRules.map((rule) => (
+                  <li
+                    key={rule.label}
+                    className="text-foreground"
+                  >
+                    <span className="inline-flex items-center gap-2 text-muted-foreground">
+                      {rule.valid ? (
+                        <Check className="size-4 text-green-600" aria-hidden="true" />
+                      ) : (
+                        <X className="size-4 text-red-500" aria-hidden="true" />
+                      )}
+                      {rule.label}
+                    </span>
+                  </li>
+                ))}
               </ul>
 
               {errors.password && (
@@ -170,7 +233,7 @@ export default function Register() {
               className="btn-ok"
               disabled={isLoading}
             >
-              {isLoading ? 'Cadastrando...' : 'Cadastrar'}
+              {isLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : 'Cadastrar'}
             </Button>
 
             <p className="text-sm text-center text-muted-foreground">

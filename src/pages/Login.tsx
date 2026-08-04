@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useAuthStore } from '@/stores/useAuthStore'
+
+import { Mail, Lock, EyeOff, Eye, LoaderCircle } from "lucide-react";
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -22,6 +25,8 @@ export default function Login() {
   const authError = useAuthStore((state) => state.error)
   const navigate = useNavigate()
 
+  const [lockPassword, setLockPassword] = useState(true)
+
   const {
     register,
     handleSubmit,
@@ -36,6 +41,10 @@ export default function Login() {
     if (success) {
       navigate('/dashboard', { replace: true })
     }
+  }
+
+  const toogleIcon = () => {
+    setLockPassword((prev) => !prev);
   }
 
   return (
@@ -56,15 +65,19 @@ export default function Login() {
             <div className="space-y-2">
               <Label htmlFor="email">E-mail</Label>
 
-              <Input
-                id="email"
-                type="email"
-                placeholder="voce@email.com"
-                autoComplete="email"
-                aria-invalid={Boolean(errors.email)}
-                {...register('email')}
-                className="input"
-              />
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-300" />
+
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="teste@email.com"
+                  autoComplete="email"
+                  aria-invalid={Boolean(errors.email)}
+                  {...register('email')}
+                  className="input pl-8.5"
+                />
+              </div>
 
               {errors.email && (
                 <p className="text-sm text-destructive">
@@ -76,15 +89,25 @@ export default function Login() {
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
 
-              <Input
-                id="password"
-                type="password"
-                placeholder="Digite sua senha"
-                autoComplete="current-password"
-                aria-invalid={Boolean(errors.password)}
-                {...register('password')}
-                className="input"
-              />
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-300" />
+
+                <Input
+                  id="password"
+                  type={lockPassword ? "password" : "text"}
+                  placeholder="Digite sua senha"
+                  autoComplete="current-password"
+                  aria-invalid={Boolean(errors.password)}
+                  {...register('password')}
+                  className="input pl-8.5"
+                />
+
+                <div className="absolute right-3 top-1/2 h-4 w- -translate-y-1/2 cursor-pointer" onClick={() => toogleIcon()}>
+                  <Eye className={`${lockPassword ? "hidden" : "block"} absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-300`} />
+
+                  <EyeOff className={`${lockPassword ? "block" : "hidden"} absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-300`} />
+                </div>
+              </div>
 
               {errors.password && (
                 <p className="text-sm text-destructive">
@@ -104,7 +127,7 @@ export default function Login() {
               className="btn-ok"
               disabled={isLoading}
             >
-              {isLoading ? 'Entrando...' : 'Entrar'}
+              {isLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : 'Entrar'}
             </Button>
 
             <p className="text-sm text-center text-muted-foreground">
