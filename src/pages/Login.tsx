@@ -141,7 +141,7 @@ export default function Login() {
 
       <Card className="box-dashed w-full max-w-sm ring-0 mt-4">
         <CardContent>
-          <CardDescription className="text-green-500">
+          <CardDescription className="text-chateau-green-500">
             <CardTitle className="text-sm font-semibold text-center">
               Acesso conta teste
             </CardTitle>

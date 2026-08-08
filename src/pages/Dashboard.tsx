@@ -211,7 +211,7 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="relative">
-            <p className="text-2xl font-bold text-red-600">
+            <p className="text-2xl font-bold text-mojo-600">
               {formatCurrency(totalSpent)}
             </p>
           </CardContent>
@@ -226,7 +226,7 @@ export default function Dashboard() {
           <CardContent>
             <p
               className={`text-2xl font-bold ${
-                remaining >= 0 ? 'text-green-600' : 'text-red-600'
+                remaining >= 0 ? 'text-chateau-green-600' : 'text-mojo-600'
               }`}
             >
               {formatCurrency(remaining)}
@@ -239,10 +239,12 @@ export default function Dashboard() {
         <Card className="card-full lg:col-span-2">
           <CardHeader>
             <CardTitle>Gastos por categoria</CardTitle>
+
             <p className="text-sm text-muted-foreground">
-              Distribuicao dos gastos deste mes por categoria.
+              Distribuição dos gastos deste mes por categoria.
             </p>
           </CardHeader>
+          
           <CardContent>
             {categoryExpenses.length === 0 ? (
               <p className="py-20 text-center text-muted-foreground">
@@ -250,7 +252,7 @@ export default function Dashboard() {
               </p>
             ) : (
               <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(220px,0.8fr)] md:items-center">
-                <div className="h-72">
+                <div className="h-96">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -306,6 +308,7 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle>Salário x gastos</CardTitle>
           </CardHeader>
+
           <CardContent>
             {salaryValue === 0 && totalSpent === 0 ? (
               <p className="py-20 text-center text-muted-foreground">
@@ -345,8 +348,9 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle>Gastos por mês</CardTitle>
           </CardHeader>
+
           <CardContent>
-            <div className="h-72">
+            <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={monthlyExpenses}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />

@@ -37,15 +37,15 @@ const paymentStatusStyles: Record<
 > = {
   a_pagar: {
     label: 'A pagar',
-    className: 'bg-yellow-100 text-yellow-800',
+    className: 'border-corn-400 border-2 bg-corn-200 text-corn-700',
   },
   pago: {
     label: 'Pago',
-    className: 'bg-green-100 text-green-800',
+    className: 'border-chateau-green-400 border-2 bg-chateau-green-200 text-chateau-green-700',
   },
   atrasado: {
     label: 'Atrasado',
-    className: 'bg-red-100 text-red-800',
+    className: 'border-mojo-400 border-2 bg-mojo-200 text-red-700',
   },
 }
 
@@ -251,7 +251,7 @@ export default function Expenses() {
 
   return (
     <section className="w-full">
-      <div className="sm:flex items-center justify-between gap-4">
+      <div className="sm:flex items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Despesas</h1>
           <p className="text-sm text-muted-foreground">
@@ -259,7 +259,7 @@ export default function Expenses() {
           </p>
         </div>
 
-        <div className="mt-4 sm:mt-0 flex items-center gap-2">
+        <div className="mt-4 sm:mt-0 flex items-center justify-center gap-2">
           <Button
             className="btn-danger-w-max"
             type="button"
@@ -298,7 +298,7 @@ export default function Expenses() {
 
       <div
         className={`grid gap-4 sm:grid-cols-2 md:grid-cols-3 ${expenses.length > 0 ? 'mt-4' : 'mt-0' }`}
-    >
+      >
         {visibleExpenses.map((expense) => {
           const category = expense.categoria_id
             ? categoryById.get(expense.categoria_id)
@@ -309,31 +309,39 @@ export default function Expenses() {
           }
 
           return (
-            <Card key={expense.id}>
+            <Card key={expense.id} className="justify-start">
               <CardHeader className="flex flex-wrap flex-row items-start justify-between gap-4 space-y-0">
-                <div>
-                  <div className='flex max-md:flex-col items-start md:items-center gap-2'>
+                <div className="w-full">
+                  <div className='w-full md:w-[60%] flex flex-wrap max-sm:flex-col items-start md:items-center gap-2'>
                     <span
-                      className={`inline-block w-fit items-center rounded-full px-2.5 py-1 text-xs font-semibold ${paymentStatus.className}`}
+                      className={`block w-fit items-center rounded-md px-2.5 py-1 text-xs font-normal ${paymentStatus.className}`}
                     >
                       {paymentStatus.label}
                     </span>
 
-                    <span className="bg-blue-300 text-white inline-block w-fit items-center rounded-full px-2.5 py-1 text-xs font-semibold">
+                    <span className="block w-fit items-center rounded-md px-2.5 py-1 text-xs font-normal border-lochmara-400 border-2 bg-lochmara-300 text-white">
                       {formatDate(expense.data_gasto)}
                     </span>
 
-                    <span className="bg-gray-400 text-white inline-block w-fit items-center rounded-full px-2.5 py-1 text-xs font-semibold">
+                    <span className="block w-fit items-center rounded-md px-2.5 py-1 text-xs font-normal bg-gray-400 text-white">
                       {category?.nome ?? 'Sem categoria'}
                     </span>
                   </div>
 
-                  <CardTitle className="font-bold my-4 leading-none">{expense.nome}</CardTitle>
+                  <CardTitle className="font-bold text-lg my-4 leading-none">{expense.nome}</CardTitle>
 
-                  <p className="text-xl font-bold leading-none m-0">
+                  <p className="text-lg font-bold leading-none m-0">
                     {formatCurrency(expense.valor)}
                   </p>
                 </div>
+              </CardHeader>
+
+              <CardContent className="space-y-2">
+                {expense.descricao && (
+                  <p className="text-xs text-muted-foreground">
+                    {expense.descricao}
+                  </p>
+                )}
 
                 <div className="w-full grid grid-cols-2 gap-4">
                   <Button
@@ -356,14 +364,6 @@ export default function Expenses() {
                     <Trash2 />
                   </Button>
                 </div>
-              </CardHeader>
-
-              <CardContent className="space-y-2">
-                {expense.descricao && (
-                  <p className="text-sm text-muted-foreground">
-                    {expense.descricao}
-                  </p>
-                )}
               </CardContent>
             </Card>
           )
@@ -383,7 +383,7 @@ export default function Expenses() {
               <PaginationItem>
                 <PaginationPrevious
                   type="button"
-                  className="text-green-500 hover:text-green-600 cursor-pointer"
+                  className="text-chateau-green-500 hover:text-chateau-green-600 cursor-pointer"
                   disabled={activePage === 1 || isActionLoading}
                   onClick={() => setCurrentPage(activePage - 1)}
                 />
@@ -394,7 +394,7 @@ export default function Expenses() {
                   {typeof page === 'number' ? (
                     <PaginationLink
                       type="button"
-                      className="text-green-400 hover:text-green-500 border-green-500 bg-transparent cursor-pointer"
+                      className="text-chateau-green-400 hover:text-chateau-green-500 border-chateau-green-500 bg-transparent cursor-pointer"
                       isActive={page === activePage}
                       disabled={isActionLoading}
                       onClick={() => setCurrentPage(page)}
@@ -411,7 +411,7 @@ export default function Expenses() {
               <PaginationItem>
                 <PaginationNext
                   type="button"
-                  className="text-green-500 hover:text-green-600 cursor-pointer"
+                  className="text-chateau-green-500 hover:text-chateau-green-600 cursor-pointer"
                   disabled={activePage === totalPages || isActionLoading}
                   onClick={() => setCurrentPage(activePage + 1)}
                 />
@@ -427,6 +427,7 @@ export default function Expenses() {
             <DialogTitle>
               {editingExpense ? 'Editar despesa' : 'Nova despesa'}
             </DialogTitle>
+            
             <DialogDescription>
               Preencha os dados da despesa.
             </DialogDescription>
@@ -503,8 +504,9 @@ export default function Expenses() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
+              <div className="col-span-2 sm:col-span-1 space-y-2">
                 <Label htmlFor="data_gasto">Data do gasto</Label>
+
                 <Input
                   className="input"
                   id="data_gasto"
@@ -513,7 +515,7 @@ export default function Expenses() {
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="col-span-2 sm:col-span-1 space-y-2">
                 <Label htmlFor="status_pagamento">Status</Label>
                 <select
                   id="status_pagamento"

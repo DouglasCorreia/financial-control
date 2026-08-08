@@ -3,7 +3,6 @@ import { useAuthStore } from '@/stores/useAuthStore'
 
 import Login from '@/pages/Login'
 import Dashboard from '@/pages/Dashboard'
-import GlobalLoading from '@/components/GlobalLoading'
 
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './routes/ProtectedRoute'
@@ -17,7 +16,6 @@ import Expenses from './pages/Expenses'
 function App() {
   const initialize = useAuthStore((state) => state.initialize)
   const user = useAuthStore((state) => state.user)
-  const isLoading = useAuthStore((state) => state.isLoading)
 
   useEffect(() => {
     let cleanup: (() => void) | undefined
@@ -37,10 +35,6 @@ function App() {
       cleanup?.()
     }
   }, [initialize])
-
-  if (isLoading) {
-    return <GlobalLoading />
-  }
 
   return (
     <BrowserRouter>

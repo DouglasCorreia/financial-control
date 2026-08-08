@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Card, CardContent } from '@/components/ui/card'
 
-import { Trash, SquarePen, Plus } from 'lucide-react';
+import { Trash2, Pencil, Plus } from 'lucide-react';
 
 import type { Category } from '@/types'
 
@@ -123,14 +123,14 @@ export default function Categories() {
 
     return(
         <section className="w-full">
-            <div className="sm:flex items-center justify-between gap-4">
+            <div className="sm:flex items-end justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold">Categoria das despesas</h1>
 
                     <p className="text-sm text-muted-foreground">Gerencie as categorias de suas despesas.</p>
                 </div>
 
-                <div className="mt-4 sm:mt-0 flex items-center gap-2">
+                <div className="mt-4 sm:mt-0 flex items-center justify-center gap-2">
                     <Button className="btn-ok-w-max" type="button" onClick={handleCreate} disabled={isActionLoading || isLoading}>
                         <Plus /> Categoria
                     </Button>
@@ -159,8 +159,8 @@ export default function Categories() {
                 {categories.map((category) => (
                     <Card key={category.id} className="card-full col-span-1">
                         <CardContent className="grid grid-cols-12 gap-2.5">
-                            <div className="col-span-12 sm:col-span-10 flex flex-wrap items-center gap-4">
-                                <span className="block size-8 rounded-full" style={{ backgroundColor: category.cor ?? '#999' }}></span>
+                            <div className="col-span-12 sm:col-span-10 flex flex-wrap items-center gap-3">
+                                <span className="block h-8 w-2" style={{ backgroundColor: category.cor ?? '#999' }}></span>
 
                                 <h2 className="text-lg font-medium">{category.nome}</h2>
                             </div>
@@ -169,13 +169,13 @@ export default function Categories() {
                                 <div className="grid grid-cols-2 gap-2">
                                     <div className="col-span-1">
                                         <Button className="btn-ok" type="button" onClick={() => handleEdit(category)} disabled={isActionLoading || isLoading}>
-                                            <SquarePen />
+                                            <Pencil />
                                         </Button>
                                     </div>
 
                                     <div className="col-span-1">
                                         <Button className="btn-danger" type="button" variant="destructive" onClick={() => setCategoryToDelete(category)} disabled={isActionLoading || isLoading}>
-                                            <Trash />
+                                            <Trash2 />
                                         </Button>
                                     </div>
                                 </div>

@@ -185,7 +185,7 @@ export default function Register() {
                   >
                     <span className="inline-flex items-center gap-2 text-muted-foreground">
                       {rule.valid ? (
-                        <Check className="size-4 text-green-600" aria-hidden="true" />
+                        <Check className="size-4 text-chateau-green-600" aria-hidden="true" />
                       ) : (
                         <X className="size-4 text-red-500" aria-hidden="true" />
                       )}

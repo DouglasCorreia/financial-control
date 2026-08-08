@@ -22,7 +22,7 @@ export default function AppLayout() {
       <header className="sticky top-0 border-b border-gray-200 bg-background py-4 z-10">
         <div className="container flex items-center justify-end md:justify-between">
           <nav className="hidden lg:block">
-            <ul className="flex gap-4 text-xs text-gray-600 [&>li>*]:font-semibold [&>li>*]:transition-colors [&>li>*]:hover:text-green-400">
+            <ul className="flex gap-4 text-xs text-gray-600 [&>li>*]:font-semibold [&>li>*]:transition-colors [&>li>*]:hover:text-chateau-green-400">
                 <li>
                   <Link onClick={closeMenu} className="block cursor-pointer" to="/dashboard">Dashboard</Link>
                 </li>
@@ -53,7 +53,7 @@ export default function AppLayout() {
 
           <div className="relative group">
             <p
-              className="flex items-center justify-center gap-4 bg-green-400 rounded-full size-9 text-white font-bold cursor-pointer"
+              className="flex items-center justify-center gap-4 bg-chateau-green-400 rounded-full size-9 text-white font-bold cursor-pointer"
               onClick={toggleSubmenu}
               aria-expanded={isMenuOpen}
               aria-controls="profile-menu"
@@ -62,14 +62,14 @@ export default function AppLayout() {
             </p>
 
             <div
-              className={`absolute right-0 top-full z-50 mt-2 min-w-64 rounded-2xl border border-green-400 bg-white p-4 text-xs shadow-lg ${
+              className={`absolute right-0 top-full z-50 mt-2 min-w-64 rounded-2xl border border-chateau-green-400 bg-white p-4 text-xs shadow-lg ${
                 isMenuOpen ? 'block' : 'hidden'
               }`}
             >
               <p className="text-sm text-gray-700 font-semibold">Bem vindo, { profile?.nome.split(" ")[0] }!</p>
 
               <nav className="mt-4">
-                <ul className="flex flex-col gap-2 text-xs text-gray-600 [&>li>*]:transition-colors [&>li>*]:hover:text-green-400">
+                <ul className="flex flex-col gap-2 text-xs text-gray-600 [&>li>*]:transition-colors [&>li>*]:hover:text-chateau-green-400">
                     <li>
                       <Link onClick={closeMenu} className="block cursor-pointer" to="/dashboard">Dashboard</Link>
                     </li>

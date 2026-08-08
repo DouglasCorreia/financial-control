@@ -153,7 +153,7 @@ export default function Profile() {
                         </div>
 
                         {nameMessage && (
-                            <p className="text-sm text-center text-green-500 space-y-2 bg-green-100 p-2 rounded-2xl">
+                            <p className="text-sm text-center text-chateau-green-500 space-y-2 bg-chateau-green-100 p-2 rounded-2xl">
                                 {nameMessage}
                             </p>
                         )}
@@ -216,7 +216,7 @@ export default function Profile() {
                         </div>
 
                         {passwordMessage && (
-                            <p className="text-sm text-center text-green-500 space-y-2 bg-green-100 p-2 rounded-2xl">
+                            <p className="text-sm text-center text-chateau-green-500 space-y-2 bg-chateau-green-100 p-2 rounded-2xl">
                                 {passwordMessage}
                             </p>
                         )}
