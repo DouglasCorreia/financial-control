@@ -12,6 +12,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
+import CopyButton from '@/components/CopyButton'
+
 const loginSchema = z.object({
   email: z.string().email('Digite um e-mail válido'),
   password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres'),
@@ -146,8 +148,17 @@ export default function Login() {
               Acesso conta teste
             </CardTitle>
 
-            <p><b className="font-semibold">E-mail:</b> teste@teste.com</p>
-            <p><b className="font-semibold">Senha:</b> 123456$!Dd</p>
+            <p className="flex items-center justify-between">
+              <b className="font-semibold">E-mail: teste@teste.com</b>
+              
+              <CopyButton value="teste@teste.com" />
+            </p>
+
+            <p className="flex items-center justify-between">
+              <b className="font-semibold">Senha: 123456$!Dd</b>
+
+              <CopyButton value="123456$!Dd" />
+            </p>
           </CardDescription>
         </CardContent>
       </Card>

@@ -25,6 +25,8 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination'
 
+import GlobalLoading from '@/components/GlobalLoading'
+
 const paymentStatuses = [
   { value: 'a_pagar', label: 'A Pagar' },
   { value: 'pago', label: 'Pago' },
@@ -37,15 +39,15 @@ const paymentStatusStyles: Record<
 > = {
   a_pagar: {
     label: 'A pagar',
-    className: 'border-corn-400 border-2 bg-corn-200 text-corn-700',
+    className: 'bg-corn-200 text-corn-700',
   },
   pago: {
     label: 'Pago',
-    className: 'border-chateau-green-400 border-2 bg-chateau-green-200 text-chateau-green-700',
+    className: 'bg-chateau-green-200 text-chateau-green-700',
   },
   atrasado: {
     label: 'Atrasado',
-    className: 'border-mojo-400 border-2 bg-mojo-200 text-red-700',
+    className: 'bg-mojo-200 text-red-700',
   },
 }
 
@@ -249,6 +251,10 @@ export default function Expenses() {
     }
   }
 
+  if (isLoading) {
+    return <GlobalLoading />
+  }
+
   return (
     <section className="w-full">
       <div className="sm:flex items-end justify-between gap-4">
@@ -319,7 +325,7 @@ export default function Expenses() {
                       {paymentStatus.label}
                     </span>
 
-                    <span className="block w-fit items-center rounded-md px-2.5 py-1 text-xs font-normal border-lochmara-400 border-2 bg-lochmara-300 text-white">
+                    <span className="block w-fit items-center rounded-md px-2.5 py-1 text-xs font-normal bg-lochmara-300 text-white">
                       {formatDate(expense.data_gasto)}
                     </span>
 
@@ -508,7 +514,7 @@ export default function Expenses() {
                 <Label htmlFor="data_gasto">Data do gasto</Label>
 
                 <Input
-                  className="input"
+                  className="input w-full max-w-gull"
                   id="data_gasto"
                   type="date"
                   {...form.register('data_gasto')}

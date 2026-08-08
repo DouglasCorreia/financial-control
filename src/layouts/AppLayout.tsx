@@ -21,7 +21,7 @@ export default function AppLayout() {
   
   return (
     <div className="min-h-screen bg-muted/30">
-      <header className="fixed md:sticky top-0 w-full border-b border-gray-200 bg-background py-4 z-10">
+      <header className="sticky top-0 w-full border-b border-gray-200 bg-background py-4 z-10">
         <div className="container flex items-center justify-between">
           <div 
             className="cursor-pointer"
@@ -37,10 +37,10 @@ export default function AppLayout() {
             `}
           >
             <div className="flex items-center justify-between mb-4">
-              <span className="block font-semibold">Bem vindo, { profile?.nome }</span>
+              <span className="block font-semibold text-muted-foreground">Bem vindo, { profile?.nome }</span>
 
               <span
-                className="cursor-pointer"
+                className="cursor-pointer text-muted-foreground h-7 w-7 transition-colors bg-gray-200 lg:hover:text-chateau-green-600 lg:hover:bg-chateau-green-400 flex items-center justify-center rounded-lg"
                 onClick={toggleSubmenu}
               >
                 <X />
@@ -48,29 +48,29 @@ export default function AppLayout() {
             </div>
 
             <nav>
-              <ul className="flex flex-col gap-2 text-xs text-gray-600 [&>li>*]:font-normal [&>li>*]:transition-colors [&>li>*]:hover:text-chateau-green-400">
+              <ul className="flex flex-col gap-2 text-xs text-muted-foreground [&>li>*]:font-semibold [&>li>*]:transition-colors lg:[&>li>*]:hover:text-chateau-green-400 lg:[&>li>*]:hover:bg-chateau-green-300 lg:[&>li>*]:hover:text-chateau-green-600">
                   <li>
-                    <Link onClick={closeMenu} className="block cursor-pointer" to="/dashboard">Dashboard</Link>
+                    <Link onClick={closeMenu} className="block cursor-pointer p-2 rounded-md" to="/dashboard">Dashboard</Link>
                   </li>
 
                   <li>
-                    <Link onClick={closeMenu} className="block cursor-pointer" to="/categories">Categoria das despesas</Link>
+                    <Link onClick={closeMenu} className="block cursor-pointer p-2 rounded-md" to="/categories">Categoria das despesas</Link>
                   </li>
 
                   <li>
-                    <Link onClick={closeMenu} className="block cursor-pointer" to="/expenses">Despesas</Link>
+                    <Link onClick={closeMenu} className="block cursor-pointer p-2 rounded-md" to="/expenses">Despesas</Link>
                   </li>
 
                   <li>
-                    <Link onClick={closeMenu} className="block cursor-pointer" to="/budget">Salário</Link>
+                    <Link onClick={closeMenu} className="block cursor-pointer p-2 rounded-md" to="/budget">Salário</Link>
                   </li>
 
                   <li>
-                    <Link onClick={closeMenu} className="block cursor-pointer" to="/profile">Editar perfil</Link>
+                    <Link onClick={closeMenu} className="block cursor-pointer p-2 rounded-md" to="/profile">Editar perfil</Link>
                   </li>
 
                   <li>
-                    <span className="cursor-pointer block" onClick={() => signOut()}>
+                    <span className="block cursor-pointer p-2 rounded-lg" onClick={() => signOut()}>
                       Sair
                     </span>
                   </li>
