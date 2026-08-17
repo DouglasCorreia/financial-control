@@ -135,9 +135,9 @@ export default function Categories() {
                     <p className="text-sm text-muted-foreground">Gerencie as categorias de suas despesas.</p>
                 </div>
 
-                <div className="mt-4 sm:mt-0 flex items-center justify-center gap-2">
+                <div className="mt-4 sm:mt-0 flex flex-wrap items-center justify-end md:justify-center gap-2">
                     <Button className="btn-ok-w-max" type="button" onClick={handleCreate} disabled={isActionLoading || isLoading}>
-                        <Plus /> Categoria
+                        <Plus /> <span className="hidden md:inline">Categoria</span>
                     </Button>
                 </div>
             </div>

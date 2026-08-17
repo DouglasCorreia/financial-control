@@ -321,35 +321,35 @@ body {
   }
   
   .btn-ok {
-    @apply w-full cursor-pointer text-xs text-white bg-chateau-green-400 rounded-2xl h-7 hover:bg-chateau-green-500 hover:text-white;
+    @apply w-full cursor-pointer text-xs text-white bg-chateau-green-400 rounded-md h-10 md:h-7 hover:bg-chateau-green-500 hover:text-white;
   }
 
   .btn-ok-w-max {
-    @apply w-max cursor-pointer  text-xs text-white bg-chateau-green-400 rounded-2xl h-7 hover:bg-chateau-green-500 hover:text-white px-4;
+    @apply w-max cursor-pointer  text-xs text-white bg-chateau-green-400 rounded-md h-10 md:h-7 hover:bg-chateau-green-500 hover:text-white px-4;
   }
 
   .btn-edit {
-    @apply w-full cursor-pointer text-xs text-white bg-chateau-green-400 rounded-2xl h-7 hover:bg-chateau-green-500 hover:text-white;
+    @apply w-full cursor-pointer text-xs text-white bg-lochmara-300 rounded-md h-10 md:h-7 hover:bg-lochmara-500 hover:text-white;
   }
 
   .btn-edit-w-max {
-    @apply w-max cursor-pointer text-xs text-white bg-chateau-green-400 rounded-2xl h-7 hover:bg-chateau-green-500 hover:text-white px-4;
+    @apply w-max cursor-pointer text-xs text-white bg-lochmara-300 rounded-md h-10 md:h-7 hover:bg-lochmara-500 hover:text-white px-4;
   }
 
   .btn-danger{
-    @apply w-full cursor-pointer text-xs text-white bg-mojo-500 rounded-2xl h-7 hover:bg-mojo-600 hover:text-white px-4;
+    @apply w-full cursor-pointer text-xs text-white bg-mojo-500 rounded-md h-10 md:h-7 hover:bg-mojo-600 hover:text-white px-4;
   }
 
   .btn-danger-w-max{
-    @apply w-max cursor-pointer text-xs text-white bg-mojo-500 rounded-2xl h-7 hover:bg-mojo-600 hover:text-white px-4;
+    @apply w-max cursor-pointer text-xs text-white bg-mojo-500 rounded-md h-10 md:h-7 hover:bg-mojo-600 hover:text-white px-4;
   }
 
   .btn-cancel-w-max{
-    @apply w-max cursor-pointer text-xs text-white bg-gray-400 rounded-2xl outline-none border-none h-7 hover:bg-gray-500 hover:text-white px-4;
+    @apply w-max cursor-pointer text-xs text-white bg-gray-400 rounded-2xl outline-none border-none rounded-md h-10 md:h-7 hover:bg-gray-500 hover:text-white px-4;
   }
 
   .input{
-    @apply w-full border-gray-300 rounded-2xl h-9 focus-visible:ring-offset-2 focus-visible:ring-1 focus-visible:ring-chateau-green-400 
+    @apply w-full border-gray-300 rounded-2xl h-10 md:h-9 focus-visible:ring-offset-2 focus-visible:ring-1 focus-visible:ring-chateau-green-400 
   }
 
   .card{

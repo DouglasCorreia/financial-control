@@ -3,7 +3,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { NumericFormat } from 'react-number-format'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { Filter, Pencil, Plus, Trash2 } from 'lucide-react'
 
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useFinancialStore } from '@/stores/useFinancialStore'
@@ -95,6 +95,8 @@ export default function Expenses() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null)
   const [deleteAllOpen, setDeleteAllOpen] = useState(false)
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [selectedCategoryId, setSelectedCategoryId] = useState('all')
   const [isActionLoading, setIsActionLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -115,7 +117,15 @@ export default function Expenses() {
       [categories],
     )
 
-  const totalPages = Math.ceil(expenses.length / ITEMS_PER_PAGE)
+  const filteredExpenses = useMemo(
+    () =>
+      selectedCategoryId === 'all'
+        ? expenses
+        : expenses.filter((expense) => expense.categoria_id === selectedCategoryId),
+    [expenses, selectedCategoryId],
+  )
+
+  const totalPages = Math.ceil(filteredExpenses.length / ITEMS_PER_PAGE)
   const activePage = totalPages === 0
     ? 1
     : Math.min(currentPage, totalPages)
@@ -123,8 +133,8 @@ export default function Expenses() {
   const visibleExpenses = useMemo(() => {
     const start = (activePage - 1) * ITEMS_PER_PAGE
 
-    return expenses.slice(start, start + ITEMS_PER_PAGE)
-  }, [activePage, expenses])
+    return filteredExpenses.slice(start, start + ITEMS_PER_PAGE)
+  }, [activePage, filteredExpenses])
 
   const pageNumbers = useMemo(() => {
     if (totalPages <= 7) {
@@ -251,6 +261,15 @@ export default function Expenses() {
     }
   }
 
+  const handleCategoryFilterChange = (categoryId: string) => {
+    setSelectedCategoryId(categoryId)
+    setCurrentPage(1)
+  }
+
+  const clearCategoryFilter = () => {
+    handleCategoryFilterChange('all')
+  }
+
   if (isLoading) {
     return <GlobalLoading />
   }
@@ -265,7 +284,7 @@ export default function Expenses() {
           </p>
         </div>
 
-        <div className="mt-4 sm:mt-0 flex items-center justify-center gap-2">
+        <div className="mt-4 sm:mt-0 flex flex-wrap items-center justify-end md:justify-center gap-2">
           <Button
             className="btn-danger-w-max"
             type="button"
@@ -273,11 +292,21 @@ export default function Expenses() {
             disabled={expenses.length === 0 || isLoading || isActionLoading}
             onClick={() => setDeleteAllOpen(true)}
           >
-            <Trash2 /> Excluir todas
+            <Trash2 /> <span className="hidden md:inline">Excluir todas</span>
+          </Button>
+
+          <Button
+            className="w-max btn-edit-w-max"
+            type="button"
+            variant="outline"
+            disabled={isLoading || isActionLoading}
+            onClick={() => setFilterOpen(true)}
+          >
+            <Filter /> <span className="hidden md:inline">{selectedCategoryId === 'all' ? 'Filtrar' : 'Filtro ativo'}</span>
           </Button>
 
           <Button className="btn-ok-w-max" type="button" onClick={openCreateDialog} disabled={isLoading || isActionLoading}>
-            <Plus /> Despesa
+            <Plus /> <span className="hidden md:inline">Despesa</span>
           </Button>
         </div>
       </div>
@@ -294,16 +323,18 @@ export default function Expenses() {
         </Card>
       )}
 
-      {!isLoading && expenses.length === 0 && (
+      {!isLoading && filteredExpenses.length === 0 && (
         <Card className="mt-4">
           <CardContent className="text-center text-muted-foreground">
-            Nenhuma despesa cadastrada.
+            {expenses.length === 0
+              ? 'Nenhuma despesa cadastrada.'
+              : 'Nenhuma despesa encontrada para esta categoria.'}
           </CardContent>
         </Card>
       )}
 
       <div
-        className={`grid gap-4 sm:grid-cols-2 md:grid-cols-3 ${expenses.length > 0 ? 'mt-4' : 'mt-0' }`}
+        className={`grid gap-4 sm:grid-cols-2 md:grid-cols-3 ${filteredExpenses.length > 0 ? 'mt-4' : 'mt-0' }`}
       >
         {visibleExpenses.map((expense) => {
           const category = expense.categoria_id
@@ -380,8 +411,8 @@ export default function Expenses() {
         <div className="mt-6 space-y-3">
           <p className="text-center text-sm text-muted-foreground">
             Mostrando {(activePage - 1) * ITEMS_PER_PAGE + 1} a{' '}
-            {Math.min(activePage * ITEMS_PER_PAGE, expenses.length)} de{' '}
-            {expenses.length} despesas
+            {Math.min(activePage * ITEMS_PER_PAGE, filteredExpenses.length)} de{' '}
+            {filteredExpenses.length} despesas
           </p>
 
           <Pagination>
@@ -441,7 +472,7 @@ export default function Expenses() {
 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="nome">Nome</Label>
+              <Label htmlFor="nome">* Nome</Label>
 
               <Input
                 className="input"
@@ -457,7 +488,7 @@ export default function Expenses() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="categoria_id">Categoria</Label>
+              <Label htmlFor="categoria_id">* Categoria</Label>
 
               <select
                 id="categoria_id"
@@ -479,7 +510,7 @@ export default function Expenses() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="valor">Valor</Label>
+              <Label htmlFor="valor">* Valor</Label>
               <Controller
                 name="valor"
                 control={form.control}
@@ -511,10 +542,10 @@ export default function Expenses() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="col-span-2 sm:col-span-1 space-y-2">
-                <Label htmlFor="data_gasto">Data do gasto</Label>
+                <Label htmlFor="data_gasto">* Data do gasto</Label>
 
                 <Input
-                  className="input w-full max-w-gull"
+                  className="input block w-full min-w-0 max-w-full"
                   id="data_gasto"
                   type="date"
                   {...form.register('data_gasto')}
@@ -564,6 +595,54 @@ export default function Expenses() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={filterOpen} onOpenChange={setFilterOpen}>
+        <DialogContent className="left-auto right-0 top-0 h-dvh rounded-none w-full max-w-sm translate-x-0 translate-y-0 overflow-y-auto sm:max-w-sm block">
+          <DialogHeader>
+            <DialogTitle>Filtrar despesas</DialogTitle>
+            
+            <DialogDescription>
+              Selecione a categoria das despesas que deseja visualizar.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2 my-4">
+            <Label htmlFor="category-filter">Categoria</Label>
+
+            <select
+              id="category-filter"
+              className="h-9 w-full rounded-2xl border border-input bg-background px-3 text-sm"
+              value={selectedCategoryId}
+              onChange={(event) => handleCategoryFilterChange(event.target.value)}
+            >
+              <option value="all">Todas as categorias</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.nome}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <DialogFooter className="flex-row justify-between gap-2 bg-transparent border-0">
+            <Button
+              type="button"
+              className="btn-edit-w-max"
+              onClick={clearCategoryFilter}
+              disabled={selectedCategoryId === 'all' || isActionLoading}
+            >
+              Limpar filtro
+            </Button>
+            <Button
+              type="button"
+              className="btn-ok-w-max"
+              onClick={() => setFilterOpen(false)}
+            >
+              Aplicar
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

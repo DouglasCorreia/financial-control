@@ -236,7 +236,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="card-full lg:col-span-2">
+        <Card className="card-full min-w-0 lg:col-span-2">
           <CardHeader>
             <CardTitle>Gastos por categoria</CardTitle>
 
@@ -245,13 +245,13 @@ export default function Dashboard() {
             </p>
           </CardHeader>
           
-          <CardContent>
+          <CardContent className="min-w-0 overflow-hidden">
             {categoryExpenses.length === 0 ? (
               <p className="py-20 text-center text-muted-foreground">
                 Nenhum gasto categorizado neste mes.
               </p>
             ) : (
-              <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(220px,0.8fr)] md:items-center">
+              <div className="grid min-w-0 gap-6 md:grid-cols-[minmax(0,1fr)_minmax(220px,0.8fr)] md:items-center">
                 <div className="h-96">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -278,13 +278,13 @@ export default function Dashboard() {
                   </ResponsiveContainer>
                 </div>
 
-                <div className="space-y-3">
+                <div className="min-w-0 space-y-3">
                   {categoryExpenses.map((category) => (
                     <div
                       key={category.name}
-                      className="flex items-center justify-between gap-4 border-b pb-3 last:border-0"
+                      className="flex min-w-0 w-full items-center justify-between gap-2 border-b pb-3 last:border-0"
                     >
-                      <div className="flex min-w-0 items-center gap-2">
+                      <div className="flex min-w-0 flex-1 items-center gap-2">
                         <span
                           className="size-3 shrink-0 rounded-full"
                           style={{ backgroundColor: category.color }}
@@ -293,7 +293,7 @@ export default function Dashboard() {
                           {category.name}
                         </span>
                       </div>
-                      <strong className="whitespace-nowrap text-sm">
+                      <strong className="shrink-0 whitespace-nowrap text-sm">
                         {formatCurrency(category.value)}
                       </strong>
                     </div>
