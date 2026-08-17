@@ -298,14 +298,18 @@ export default function Expenses() {
           <Button
             className="w-max btn-edit-w-max"
             type="button"
-            variant="outline"
             disabled={isLoading || isActionLoading}
             onClick={() => setFilterOpen(true)}
           >
             <Filter /> <span className="hidden md:inline">{selectedCategoryId === 'all' ? 'Filtrar' : 'Filtro ativo'}</span>
           </Button>
 
-          <Button className="btn-ok-w-max" type="button" onClick={openCreateDialog} disabled={isLoading || isActionLoading}>
+          <Button
+            className="btn-ok-w-max"
+            type="button"
+            onClick={openCreateDialog}
+            disabled={isLoading || isActionLoading}
+          >
             <Plus /> <span className="hidden md:inline">Despesa</span>
           </Button>
         </div>
@@ -626,7 +630,7 @@ export default function Expenses() {
             </select>
           </div>
 
-          <DialogFooter className="flex-row justify-between gap-2 bg-transparent border-0">
+          <DialogFooter className="flex-row justify-end gap-2 bg-transparent border-0">
             <Button
               type="button"
               className="btn-edit-w-max"
@@ -635,6 +639,7 @@ export default function Expenses() {
             >
               Limpar filtro
             </Button>
+
             <Button
               type="button"
               className="btn-ok-w-max"
