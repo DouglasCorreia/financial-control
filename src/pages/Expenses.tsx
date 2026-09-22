@@ -77,6 +77,26 @@ const formatDate = (value: string) =>
     new Date(`${value}T00:00:00`),
   )
 
+const monthFormatter = new Intl.DateTimeFormat('pt-BR', {
+  month: 'long',
+  year: 'numeric',
+})
+
+const getExpenseMonthKey = (value: string) => {
+  const date = new Date(`${value}T00:00:00`)
+
+  if (Number.isNaN(date.getTime())) return ''
+
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+}
+
+const formatMonthLabel = (monthKey: string) => {
+  const [year, month] = monthKey.split('-').map(Number)
+  const label = monthFormatter.format(new Date(year, month - 1, 1))
+
+  return label.charAt(0).toUpperCase() + label.slice(1)
+}
+
 export default function Expenses() {
   const user = useAuthStore((state) => state.user)
 
@@ -96,6 +116,7 @@ export default function Expenses() {
   const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null)
   const [deleteAllOpen, setDeleteAllOpen] = useState(false)
   const [filterOpen, setFilterOpen] = useState(false)
+  const [selectedMonth, setSelectedMonth] = useState('all')
   const [selectedCategoryId, setSelectedCategoryId] = useState('all')
   const [selectedPaymentStatus, setSelectedPaymentStatus] = useState('all')
   const [isActionLoading, setIsActionLoading] = useState(false)
@@ -118,16 +139,47 @@ export default function Expenses() {
       [categories],
     )
 
+  const monthlyExpenseSummaries = useMemo(() => {
+    const totals = new Map<string, { total: number; count: number }>()
+
+    expenses.forEach((expense) => {
+      const monthKey = getExpenseMonthKey(expense.data_gasto)
+      if (!monthKey) return
+
+      const current = totals.get(monthKey)
+
+      totals.set(monthKey, {
+        total: (current?.total ?? 0) + Number(expense.valor),
+        count: (current?.count ?? 0) + 1,
+      })
+    })
+
+    return Array.from(totals.entries())
+      .sort(([firstMonth], [secondMonth]) => secondMonth.localeCompare(firstMonth))
+      .map(([key, summary]) => ({
+        key,
+        label: formatMonthLabel(key),
+        ...summary,
+      }))
+  }, [expenses])
+
+  const totalExpenseValue = useMemo(
+    () => expenses.reduce((total, expense) => total + Number(expense.valor), 0),
+    [expenses],
+  )
+
   const filteredExpenses = useMemo(
     () => expenses.filter((expense) => {
+      const matchesMonth =
+        selectedMonth === 'all' || getExpenseMonthKey(expense.data_gasto) === selectedMonth
       const matchesCategory =
         selectedCategoryId === 'all' || expense.categoria_id === selectedCategoryId
       const matchesPaymentStatus =
         selectedPaymentStatus === 'all' || expense.status_pagamento === selectedPaymentStatus
 
-      return matchesCategory && matchesPaymentStatus
+      return matchesMonth && matchesCategory && matchesPaymentStatus
     }),
-    [expenses, selectedCategoryId, selectedPaymentStatus],
+    [expenses, selectedMonth, selectedCategoryId, selectedPaymentStatus],
   )
 
   const totalPages = Math.ceil(filteredExpenses.length / ITEMS_PER_PAGE)
@@ -271,14 +323,22 @@ export default function Expenses() {
     setCurrentPage(1)
   }
 
+  const handleMonthChange = (monthKey: string) => {
+    setSelectedMonth(monthKey)
+    setCurrentPage(1)
+  }
+
   const clearFilters = () => {
+    setSelectedMonth('all')
     setSelectedCategoryId('all')
     setSelectedPaymentStatus('all')
     setCurrentPage(1)
   }
 
   const hasActiveFilter =
-    selectedCategoryId !== 'all' || selectedPaymentStatus !== 'all'
+    selectedMonth !== 'all' ||
+    selectedCategoryId !== 'all' ||
+    selectedPaymentStatus !== 'all'
 
   if (isLoading) {
     return <GlobalLoading />
@@ -327,6 +387,65 @@ export default function Expenses() {
 
       {error && (
         <p className="text-sm text-destructive">{error}</p>
+      )}
+
+      {expenses.length > 0 && (
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Card
+            className={`min-w-0 cursor-pointer transition-colors hover:ring-2 hover:ring-chateau-green-300 ${
+              selectedMonth === 'all' ? 'ring-2 ring-chateau-green-400' : ''
+            }`}
+            role="button"
+            tabIndex={0}
+            aria-pressed={selectedMonth === 'all'}
+            onClick={() => handleMonthChange('all')}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                handleMonthChange('all')
+              }
+            }}
+          >
+            <CardHeader>
+              <CardTitle className="text-base">Todos os meses</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-lg font-bold">{formatCurrency(totalExpenseValue)}</p>
+              <p className="text-sm text-muted-foreground">
+                {expenses.length} {expenses.length === 1 ? 'despesa' : 'despesas'}
+              </p>
+            </CardContent>
+          </Card>
+
+          {monthlyExpenseSummaries.map((month) => (
+            <Card
+              key={month.key}
+              className={`min-w-0 cursor-pointer transition-colors hover:ring-2 hover:ring-chateau-green-300 ${
+                selectedMonth === month.key ? 'ring-2 ring-chateau-green-400' : ''
+              }`}
+              role="button"
+              tabIndex={0}
+              aria-pressed={selectedMonth === month.key}
+              onClick={() => handleMonthChange(month.key)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  handleMonthChange(month.key)
+                }
+              }}
+            >
+              <CardHeader>
+                <CardTitle className="text-base">{month.label}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-lg font-bold">{formatCurrency(month.total)}</p>
+                <p className="text-sm text-muted-foreground">
+                  {month.count} {month.count === 1 ? 'despesa' : 'despesas'}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
 
       {isLoading && expenses.length === 0 && (

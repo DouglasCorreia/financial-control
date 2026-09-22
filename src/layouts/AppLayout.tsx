@@ -80,7 +80,7 @@ export default function AppLayout() {
 
           <div className="relative group">
             <p
-              className="flex items-center justify-center gap-4 bg-chateau-green-400 rounded-full size-9 text-white font-bold cursor-pointer"
+              className="flex items-center justify-center gap-4 bg-chateau-green-400 rounded-full size-9 text-white font-bold"
             >
               { profile?.nome.charAt(0) }
             </p>
