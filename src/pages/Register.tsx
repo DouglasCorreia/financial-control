@@ -120,7 +120,7 @@ export default function Register() {
                 placeholder="Seu nome"
                 aria-invalid={Boolean(errors.nome)}
                 {...register('nome')}
-                className="input"
+                className="input rounded-md! h-9!"
               />
 
               {errors.nome && (
@@ -143,7 +143,7 @@ export default function Register() {
                   autoComplete="email"
                   aria-invalid={Boolean(errors.email)}
                   {...register('email')}
-                  className="input pl-8.5"
+                  className="input pl-8.5 rounded-md! h-9!"
                 />
               </div>
 
@@ -167,7 +167,7 @@ export default function Register() {
                   autoComplete="current-password"
                   aria-invalid={Boolean(errors.password)}
                   {...passwordField}
-                  className="input pl-8.5"
+                  className="input pl-8.5 rounded-md! h-9!"
                 />
 
                 <div className="absolute right-3 top-1/2 h-4 w- -translate-y-1/2 cursor-pointer" onClick={() => toogleIcon()}>
@@ -212,7 +212,7 @@ export default function Register() {
                 autoComplete="current-password"
                 aria-invalid={Boolean(errors.confirmPassword)}
                 {...register('confirmPassword')}
-                className="input"
+                className="input rounded-md! h-9!"
               />
 
               {errors.confirmPassword && (
@@ -230,7 +230,7 @@ export default function Register() {
 
             <Button
               type="submit"
-              className="btn-ok"
+              className="btn-ok h-9!"
               disabled={isLoading}
             >
               {isLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : 'Cadastrar'}

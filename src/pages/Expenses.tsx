@@ -97,6 +97,7 @@ export default function Expenses() {
   const [deleteAllOpen, setDeleteAllOpen] = useState(false)
   const [filterOpen, setFilterOpen] = useState(false)
   const [selectedCategoryId, setSelectedCategoryId] = useState('all')
+  const [selectedPaymentStatus, setSelectedPaymentStatus] = useState('all')
   const [isActionLoading, setIsActionLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -118,11 +119,15 @@ export default function Expenses() {
     )
 
   const filteredExpenses = useMemo(
-    () =>
-      selectedCategoryId === 'all'
-        ? expenses
-        : expenses.filter((expense) => expense.categoria_id === selectedCategoryId),
-    [expenses, selectedCategoryId],
+    () => expenses.filter((expense) => {
+      const matchesCategory =
+        selectedCategoryId === 'all' || expense.categoria_id === selectedCategoryId
+      const matchesPaymentStatus =
+        selectedPaymentStatus === 'all' || expense.status_pagamento === selectedPaymentStatus
+
+      return matchesCategory && matchesPaymentStatus
+    }),
+    [expenses, selectedCategoryId, selectedPaymentStatus],
   )
 
   const totalPages = Math.ceil(filteredExpenses.length / ITEMS_PER_PAGE)
@@ -266,9 +271,14 @@ export default function Expenses() {
     setCurrentPage(1)
   }
 
-  const clearCategoryFilter = () => {
-    handleCategoryFilterChange('all')
+  const clearFilters = () => {
+    setSelectedCategoryId('all')
+    setSelectedPaymentStatus('all')
+    setCurrentPage(1)
   }
+
+  const hasActiveFilter =
+    selectedCategoryId !== 'all' || selectedPaymentStatus !== 'all'
 
   if (isLoading) {
     return <GlobalLoading />
@@ -301,7 +311,7 @@ export default function Expenses() {
             disabled={isLoading || isActionLoading}
             onClick={() => setFilterOpen(true)}
           >
-            <Filter /> <span className="hidden md:inline">{selectedCategoryId === 'all' ? 'Filtrar' : 'Filtro ativo'}</span>
+            <Filter /> <span className="hidden md:inline">{hasActiveFilter ? 'Filtro ativo' : 'Filtrar'}</span>
           </Button>
 
           <Button
@@ -332,7 +342,7 @@ export default function Expenses() {
           <CardContent className="text-center text-muted-foreground">
             {expenses.length === 0
               ? 'Nenhuma despesa cadastrada.'
-              : 'Nenhuma despesa encontrada para esta categoria.'}
+              : 'Nenhuma despesa encontrada com os filtros selecionados.'}
           </CardContent>
         </Card>
       )}
@@ -608,7 +618,7 @@ export default function Expenses() {
             <DialogTitle>Filtrar despesas</DialogTitle>
             
             <DialogDescription>
-              Selecione a categoria das despesas que deseja visualizar.
+              Selecione a categoria e o status das despesas que deseja visualizar.
             </DialogDescription>
           </DialogHeader>
 
@@ -630,12 +640,33 @@ export default function Expenses() {
             </select>
           </div>
 
+          <div className="space-y-2 my-4">
+            <Label htmlFor="payment-status-filter">Status do pagamento</Label>
+
+            <select
+              id="payment-status-filter"
+              className="h-9 w-full rounded-2xl border border-input bg-background px-3 text-sm"
+              value={selectedPaymentStatus}
+              onChange={(event) => {
+                setSelectedPaymentStatus(event.target.value)
+                setCurrentPage(1)
+              }}
+            >
+              <option value="all">Todos os status</option>
+              {paymentStatuses.map((status) => (
+                <option key={status.value} value={status.value}>
+                  {status.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <DialogFooter className="flex-row justify-end gap-2 bg-transparent border-0">
             <Button
               type="button"
               className="btn-edit-w-max"
-              onClick={clearCategoryFilter}
-              disabled={selectedCategoryId === 'all' || isActionLoading}
+              onClick={clearFilters}
+              disabled={!hasActiveFilter || isActionLoading}
             >
               Limpar filtro
             </Button>

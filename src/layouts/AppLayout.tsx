@@ -50,7 +50,7 @@ export default function AppLayout() {
             <nav>
               <ul className="flex flex-col gap-2 text-xs text-muted-foreground [&>li>*]:font-semibold [&>li>*]:transition-colors lg:[&>li>*]:hover:text-chateau-green-400 lg:[&>li>*]:hover:bg-chateau-green-300 lg:[&>li>*]:hover:text-chateau-green-600">
                   <li>
-                    <Link onClick={closeMenu} className="block cursor-pointer p-2 rounded-md" to="/dashboard">Dashboard</Link>
+                    <Link onClick={closeMenu} className="block cursor-pointer p-2 rounded-md" to="/dashboard">Início</Link>
                   </li>
 
                   <li>

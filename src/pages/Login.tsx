@@ -77,7 +77,7 @@ export default function Login() {
                   autoComplete="email"
                   aria-invalid={Boolean(errors.email)}
                   {...register('email')}
-                  className="input pl-8.5"
+                  className="input pl-8.5 rounded-md! h-9!"
                 />
               </div>
 
@@ -101,7 +101,7 @@ export default function Login() {
                   autoComplete="current-password"
                   aria-invalid={Boolean(errors.password)}
                   {...register('password')}
-                  className="input pl-8.5"
+                  className="input pl-8.5 rounded-md! h-9!"
                 />
 
                 <div className="absolute right-3 top-1/2 h-4 w- -translate-y-1/2 cursor-pointer" onClick={() => toogleIcon()}>
@@ -126,7 +126,7 @@ export default function Login() {
 
             <Button
               type="submit"
-              className="btn-ok"
+              className="btn-ok h-9!"
               disabled={isLoading}
             >
               {isLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : 'Entrar'}
