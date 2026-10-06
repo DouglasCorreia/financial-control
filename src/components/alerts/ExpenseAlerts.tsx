@@ -14,23 +14,31 @@ import {
 type ExpenseAlertsProps = {
   expenseToDelete: Expense | null
   deleteAllOpen: boolean
+  deleteSelectedOpen: boolean
   expenseCount: number
+  selectedExpenseCount: number
   isActionLoading: boolean
   onExpenseDeleteOpenChange: (open: boolean) => void
   onDeleteAllOpenChange: (open: boolean) => void
+  onDeleteSelectedOpenChange: (open: boolean) => void
   onConfirmDelete: () => void | Promise<void>
   onConfirmDeleteAll: () => void | Promise<void>
+  onConfirmDeleteSelected: () => void | Promise<void>
 }
 
 export default function ExpenseAlerts({
   expenseToDelete,
   deleteAllOpen,
+  deleteSelectedOpen,
   expenseCount,
+  selectedExpenseCount,
   isActionLoading,
   onExpenseDeleteOpenChange,
   onDeleteAllOpenChange,
+  onDeleteSelectedOpenChange,
   onConfirmDelete,
   onConfirmDeleteAll,
+  onConfirmDeleteSelected,
 }: ExpenseAlertsProps) {
   return (
     <>
@@ -59,6 +67,36 @@ export default function ExpenseAlerts({
               disabled={isActionLoading}
             >
               {isActionLoading ? 'Excluindo...' : 'Excluir'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={deleteSelectedOpen}
+        onOpenChange={onDeleteSelectedOpenChange}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir despesas selecionadas?</AlertDialogTitle>
+            <AlertDialogDescription>
+              As {selectedExpenseCount} despesas selecionadas serão excluídas permanentemente. Essa ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter className="flex-row justify-end gap-4 border-0 bg-transparent max-xs:justify-center">
+            <AlertDialogCancel
+              className="btn-cancel-w-max"
+              disabled={isActionLoading}
+            >
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="btn-danger-w-max"
+              onClick={() => void onConfirmDeleteSelected()}
+              disabled={isActionLoading}
+            >
+              {isActionLoading ? 'Excluindo...' : 'Excluir selecionadas'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

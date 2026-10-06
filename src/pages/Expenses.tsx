@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Filter, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Check, Filter, Pencil, Plus, Trash2 } from 'lucide-react'
 
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useFinancialStore } from '@/stores/useFinancialStore'
@@ -79,8 +79,10 @@ export default function Expenses() {
 
   const categories = useFinancialStore((state) => state.categories)
   const expenses = useFinancialStore((state) => state.expenses)
+  const salary = useFinancialStore((state) => state.salary)
   const loadCategories = useFinancialStore((state) => state.loadCategories)
   const loadExpenses = useFinancialStore((state) => state.loadExpenses)
+  const loadSalary = useFinancialStore((state) => state.loadSalary)
   const createExpense = useFinancialStore((state) => state.createExpense)
   const updateExpense = useFinancialStore((state) => state.updateExpense)
   const deleteExpense = useFinancialStore((state) => state.deleteExpense)
@@ -92,12 +94,18 @@ export default function Expenses() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null)
   const [deleteAllOpen, setDeleteAllOpen] = useState(false)
+  const [deleteSelectedOpen, setDeleteSelectedOpen] = useState(false)
+  const [selectedExpenseIds, setSelectedExpenseIds] = useState<Set<string>>(
+    () => new Set(),
+  )
   const [filterOpen, setFilterOpen] = useState(false)
   const [selectedMonth, setSelectedMonth] = useState('all')
   const [selectedCategoryId, setSelectedCategoryId] = useState('all')
   const [selectedPaymentStatus, setSelectedPaymentStatus] = useState('all')
   const [isActionLoading, setIsActionLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+
+  const salaryValue = salary ? Number(salary.valor) : null
 
     const categoryById = useMemo(
       () => new Map(categories.map((category) => [category.id, category])),
@@ -124,9 +132,10 @@ export default function Expenses() {
       .map(([key, summary]) => ({
         key,
         label: formatMonthLabel(key),
+        remaining: salaryValue === null ? null : salaryValue - summary.total,
         ...summary,
       }))
-  }, [expenses])
+  }, [expenses, salaryValue])
 
   const totalExpenseValue = useMemo(
     () => expenses.reduce((total, expense) => total + Number(expense.valor), 0),
@@ -190,7 +199,8 @@ export default function Expenses() {
 
     void loadCategories(user.id)
     void loadExpenses(user.id)
-  }, [user, loadCategories, loadExpenses])
+    void loadSalary(user.id)
+  }, [user, loadCategories, loadExpenses, loadSalary])
 
   const openCreateDialog = () => {
     if (isActionLoading) return
@@ -231,6 +241,22 @@ export default function Expenses() {
     }
   }
 
+  const toggleExpenseSelection = (expenseId: string) => {
+    if (isActionLoading) return
+
+    setSelectedExpenseIds((currentIds) => {
+      const nextIds = new Set(currentIds)
+
+      if (nextIds.has(expenseId)) {
+        nextIds.delete(expenseId)
+      } else {
+        nextIds.add(expenseId)
+      }
+
+      return nextIds
+    })
+  }
+
   const confirmDelete = async () => {
     if (!expenseToDelete || isActionLoading) return
 
@@ -241,6 +267,41 @@ export default function Expenses() {
 
       if (success) {
         setExpenseToDelete(null)
+        setSelectedExpenseIds((currentIds) => {
+          const nextIds = new Set(currentIds)
+          nextIds.delete(expenseToDelete.id)
+          return nextIds
+        })
+      }
+    } finally {
+      setIsActionLoading(false)
+    }
+  }
+
+  const confirmDeleteSelected = async () => {
+    if (selectedExpenseIds.size === 0 || isActionLoading) return
+
+    setIsActionLoading(true)
+    const idsToDelete = Array.from(selectedExpenseIds)
+    const remainingIds = new Set(idsToDelete)
+    let allDeleted = true
+
+    try {
+      for (const expenseId of idsToDelete) {
+        const success = await deleteExpense(expenseId)
+
+        if (success) {
+          remainingIds.delete(expenseId)
+        } else {
+          allDeleted = false
+        }
+      }
+
+      setSelectedExpenseIds(remainingIds)
+
+      if (allDeleted) {
+        setDeleteSelectedOpen(false)
+        setCurrentPage(1)
       }
     } finally {
       setIsActionLoading(false)
@@ -257,6 +318,7 @@ export default function Expenses() {
 
       if (success) {
         setDeleteAllOpen(false)
+        setSelectedExpenseIds(new Set())
         setCurrentPage(1)
       }
     } finally {
@@ -309,6 +371,21 @@ export default function Expenses() {
             onClick={() => setDeleteAllOpen(true)}
           >
             <Trash2 /> <span className="hidden md:inline">Excluir todas</span>
+          </Button>
+
+          <Button
+            className="btn-danger-w-max"
+            type="button"
+            variant="destructive"
+            disabled={selectedExpenseIds.size === 0 || isLoading || isActionLoading}
+            onClick={() => setDeleteSelectedOpen(true)}
+            aria-label="Excluir despesas selecionadas"
+          >
+            <Trash2 />
+            <span className="hidden md:inline">
+              Excluir selecionadas
+            </span>
+            ({selectedExpenseIds.size})
           </Button>
 
           <Button
@@ -384,6 +461,11 @@ export default function Expenses() {
                 <CardTitle className="text-base">{month.label}</CardTitle>
               </CardHeader>
               <CardContent>
+                <p className="text-sm font-medium text-muted-foreground">
+                  {month.remaining === null
+                    ? 'Salário não cadastrado'
+                    : `Saldo restante: ${formatCurrency(month.remaining)}`}
+                </p>
                 <p className="text-lg font-bold">{formatCurrency(month.total)}</p>
                 <p className="text-sm text-muted-foreground">
                   {month.count} {month.count === 1 ? 'despesa' : 'despesas'}
@@ -423,9 +505,33 @@ export default function Expenses() {
             label: expense.status_pagamento,
             className: 'bg-gray-100 text-gray-800',
           }
+          const isSelected = selectedExpenseIds.has(expense.id)
 
           return (
-            <Card key={expense.id} className="justify-start">
+            <Card
+              key={expense.id}
+              className={`relative justify-start ${isSelected ? 'ring-2 ring-chateau-green-400' : ''}`}
+            >
+              <label className="absolute right-4 top-4 z-10 flex cursor-pointer items-center">
+                <input
+                  type="checkbox"
+                  className="peer sr-only"
+                  checked={isSelected}
+                  onChange={() => toggleExpenseSelection(expense.id)}
+                  aria-label={`Selecionar ${expense.nome} para exclusão`}
+                />
+                <span
+                  aria-hidden="true"
+                  className={`flex size-5 items-center justify-center rounded-sm border-2 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-chateau-green-300 ${
+                    isSelected
+                      ? 'border-chateau-green-400 bg-chateau-green-400'
+                      : 'border-gray-300 bg-white'
+                  }`}
+                >
+                  {isSelected && <Check className="size-4 text-white" strokeWidth={3} />}
+                </span>
+              </label>
+
               <CardHeader className="flex flex-wrap flex-row items-start justify-between gap-4 space-y-0">
                 <div className="w-full">
                   <div className='w-full md:w-[60%] flex flex-wrap max-sm:flex-col items-start md:items-center gap-2'>
@@ -569,14 +675,18 @@ export default function Expenses() {
       <ExpenseAlerts
         expenseToDelete={expenseToDelete}
         deleteAllOpen={deleteAllOpen}
+        deleteSelectedOpen={deleteSelectedOpen}
         expenseCount={expenses.length}
+        selectedExpenseCount={selectedExpenseIds.size}
         isActionLoading={isActionLoading}
         onExpenseDeleteOpenChange={(open) => {
           if (!open) setExpenseToDelete(null)
         }}
         onDeleteAllOpenChange={setDeleteAllOpen}
+        onDeleteSelectedOpenChange={setDeleteSelectedOpen}
         onConfirmDelete={confirmDelete}
         onConfirmDeleteAll={confirmDeleteAll}
+        onConfirmDeleteSelected={confirmDeleteSelected}
       />
     </section>
   )
