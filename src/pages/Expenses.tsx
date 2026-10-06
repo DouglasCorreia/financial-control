@@ -1,20 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { NumericFormat } from 'react-number-format'
 import { Filter, Pencil, Plus, Trash2 } from 'lucide-react'
 
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useFinancialStore } from '@/stores/useFinancialStore'
 import type { Expense } from '@/types'
+import type { ExpenseFormData } from '@/schemas/expense'
 
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import ExpenseAlerts from '@/components/alerts/ExpenseAlerts'
+import ExpenseDialog from '@/components/modals/ExpenseDialog'
+import ExpenseFiltersDialog from '@/components/modals/ExpenseFiltersDialog'
 import {
   Pagination,
   PaginationContent,
@@ -26,12 +22,6 @@ import {
 } from '@/components/ui/pagination'
 
 import GlobalLoading from '@/components/GlobalLoading'
-
-const paymentStatuses = [
-  { value: 'a_pagar', label: 'A Pagar' },
-  { value: 'pago', label: 'Pago' },
-  { value: 'atrasado', label: 'Atrasado' },
-] as const
 
 const paymentStatusStyles: Record<
   string,
@@ -51,20 +41,7 @@ const paymentStatusStyles: Record<
   },
 }
 
-const expenseSchema = z.object({
-  nome: z.string().min(2, 'Informe o nome da despesa'),
-  descricao: z.string().max(500, 'A descrição é muito longa'),
-  valor: z.number().positive('Informe um valor maior que zero'),
-  data_gasto: z.string().min(1, 'Informe a data do gasto'),
-  categoria_id: z.string().min(1, 'Selecione uma categoria'),
-  status_pagamento: z.enum(['a_pagar', 'pago', 'atrasado']),
-})
-
-type ExpenseFormData = z.infer<typeof expenseSchema>
-
 const ITEMS_PER_PAGE = 30
-
-const today = () => new Date().toISOString().slice(0, 10)
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('pt-BR', {
@@ -111,7 +88,7 @@ export default function Expenses() {
   const isLoading = useFinancialStore((state) => state.isLoading)
   const error = useFinancialStore((state) => state.error)
 
-  const [formOpen, setFormOpen] = useState(false)
+  const [expenseDialogOpen, setExpenseDialogOpen] = useState(false)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null)
   const [deleteAllOpen, setDeleteAllOpen] = useState(false)
@@ -121,18 +98,6 @@ export default function Expenses() {
   const [selectedPaymentStatus, setSelectedPaymentStatus] = useState('all')
   const [isActionLoading, setIsActionLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-
-  const form = useForm<ExpenseFormData>({
-    resolver: zodResolver(expenseSchema),
-      defaultValues: {
-        nome: '',
-        descricao: '',
-        valor: 0,
-        data_gasto: today(),
-        categoria_id: '',
-        status_pagamento: 'a_pagar',
-      },
-    })
 
     const categoryById = useMemo(
       () => new Map(categories.map((category) => [category.id, category])),
@@ -231,34 +196,18 @@ export default function Expenses() {
     if (isActionLoading) return
 
     setEditingExpense(null)
-    form.reset({
-      nome: '',
-      descricao: '',
-      valor: 0,
-      data_gasto: today(),
-      categoria_id: '',
-      status_pagamento: 'a_pagar',
-    })
-    setFormOpen(true)
+    setExpenseDialogOpen(true)
   }
 
   const openEditDialog = (expense: Expense) => {
     if (isActionLoading) return
 
     setEditingExpense(expense)
-    form.reset({
-      nome: expense.nome,
-      descricao: expense.descricao ?? '',
-      valor: expense.valor,
-      data_gasto: expense.data_gasto,
-      categoria_id: expense.categoria_id ?? '',
-      status_pagamento: expense.status_pagamento as ExpenseFormData['status_pagamento'],
-    })
-    setFormOpen(true)
+    setExpenseDialogOpen(true)
   }
 
-  const onSubmit = async (data: ExpenseFormData) => {
-    if (!user || isActionLoading) return
+  const onExpenseSubmit = async (data: ExpenseFormData) => {
+    if (!user || isActionLoading) return false
 
     setIsActionLoading(true)
 
@@ -273,13 +222,10 @@ export default function Expenses() {
         : await createExpense(user.id, payload)
 
       if (success) {
-        setFormOpen(false)
-        form.reset()
-
-        if (!editingExpense) {
-          setCurrentPage(1)
-        }
+        setCurrentPage(1)
       }
+
+      return success
     } finally {
       setIsActionLoading(false)
     }
@@ -591,273 +537,47 @@ export default function Expenses() {
         </div>
       )}
 
-      <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingExpense ? 'Editar despesa' : 'Nova despesa'}
-            </DialogTitle>
-            
-            <DialogDescription>
-              Preencha os dados da despesa.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="nome">* Nome</Label>
-
-              <Input
-                className="input"
-                id="nome"
-                {...form.register('nome')}
-              />
-              
-              {form.formState.errors.nome && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.nome.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="categoria_id">* Categoria</Label>
-
-              <select
-                id="categoria_id"
-                className="h-9 w-full rounded-2xl border border-input bg-background px-3 text-sm"
-                {...form.register('categoria_id')}
-              >
-                <option value="">Selecione uma categoria</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.nome}
-                  </option>
-                ))}
-              </select>
-              {form.formState.errors.categoria_id && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.categoria_id.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="valor">* Valor</Label>
-              <Controller
-                name="valor"
-                control={form.control}
-                render={({ field }) => (
-                  <NumericFormat
-                    customInput={Input}
-                    getInputRef={field.ref}
-                    value={field.value || ''}
-                    onValueChange={(values) => field.onChange(values.floatValue ?? 0)}
-                    thousandSeparator="."
-                    decimalSeparator=","
-                    prefix="R$ "
-                    decimalScale={2}
-                    fixedDecimalScale
-                    allowNegative={false}
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="R$ 0,00"
-                    className="input"
-                  />
-                )}
-              />
-              {form.formState.errors.valor && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.valor.message}
-                </p>
-              )}
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="col-span-2 sm:col-span-1 space-y-2">
-                <Label htmlFor="data_gasto">* Data do gasto</Label>
-
-                <Input
-                  className="input block w-full min-w-0 max-w-full"
-                  id="data_gasto"
-                  type="date"
-                  {...form.register('data_gasto')}
-                />
-              </div>
-
-              <div className="col-span-2 sm:col-span-1 space-y-2">
-                <Label htmlFor="status_pagamento">Status</Label>
-                <select
-                  id="status_pagamento"
-                  className="h-9 w-full rounded-2xl border border-input bg-background px-3 text-sm"
-                  {...form.register('status_pagamento')}
-                >
-                  {paymentStatuses.map((status) => (
-                    <option key={status.value} value={status.value}>
-                      {status.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="descricao">Descrição</Label>
-              <textarea
-                id="descricao"
-                className="min-h-20 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-                {...form.register('descricao')}
-              />
-            </div>
-
-            <DialogFooter className="flex justify-end gap-4 flex-row max-xs:justify-center bg-transparent border-0">
-              <Button
-                type="button"
-                onClick={() => setFormOpen(false)}
-                disabled={isActionLoading}
-                className="btn-cancel-w-max"
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                disabled={isLoading || isActionLoading}
-                className="btn-ok-w-max"
-            >
-                {isLoading || isActionLoading ? 'Salvando...' : 'Salvar'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={filterOpen} onOpenChange={setFilterOpen}>
-        <DialogContent className="left-auto right-0 top-0 h-dvh rounded-none w-full max-w-sm translate-x-0 translate-y-0 overflow-y-auto sm:max-w-sm block">
-          <DialogHeader>
-            <DialogTitle>Filtrar despesas</DialogTitle>
-            
-            <DialogDescription>
-              Selecione a categoria e o status das despesas que deseja visualizar.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-2 my-4">
-            <Label htmlFor="category-filter">Categoria</Label>
-
-            <select
-              id="category-filter"
-              className="h-9 w-full rounded-2xl border border-input bg-background px-3 text-sm"
-              value={selectedCategoryId}
-              onChange={(event) => handleCategoryFilterChange(event.target.value)}
-            >
-              <option value="all">Todas as categorias</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.nome}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-2 my-4">
-            <Label htmlFor="payment-status-filter">Status do pagamento</Label>
-
-            <select
-              id="payment-status-filter"
-              className="h-9 w-full rounded-2xl border border-input bg-background px-3 text-sm"
-              value={selectedPaymentStatus}
-              onChange={(event) => {
-                setSelectedPaymentStatus(event.target.value)
-                setCurrentPage(1)
-              }}
-            >
-              <option value="all">Todos os status</option>
-              {paymentStatuses.map((status) => (
-                <option key={status.value} value={status.value}>
-                  {status.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <DialogFooter className="flex-row justify-end gap-2 bg-transparent border-0">
-            <Button
-              type="button"
-              className="btn-edit-w-max"
-              onClick={clearFilters}
-              disabled={!hasActiveFilter || isActionLoading}
-            >
-              Limpar filtro
-            </Button>
-
-            <Button
-              type="button"
-              className="btn-ok-w-max"
-              onClick={() => setFilterOpen(false)}
-            >
-              Aplicar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <AlertDialog
-        open={expenseToDelete !== null}
+      <ExpenseDialog
+        open={expenseDialogOpen}
         onOpenChange={(open) => {
+          setExpenseDialogOpen(open)
+          if (!open) setEditingExpense(null)
+        }}
+        expense={editingExpense}
+        categories={categories}
+        isLoading={isLoading}
+        isActionLoading={isActionLoading}
+        onSubmit={onExpenseSubmit}
+      />
+
+      <ExpenseFiltersDialog
+        open={filterOpen}
+        onOpenChange={setFilterOpen}
+        categories={categories}
+        selectedCategoryId={selectedCategoryId}
+        selectedPaymentStatus={selectedPaymentStatus}
+        hasActiveFilter={hasActiveFilter}
+        isActionLoading={isActionLoading}
+        onCategoryChange={handleCategoryFilterChange}
+        onPaymentStatusChange={(status) => {
+          setSelectedPaymentStatus(status)
+          setCurrentPage(1)
+        }}
+        onClearFilters={clearFilters}
+      />
+
+      <ExpenseAlerts
+        expenseToDelete={expenseToDelete}
+        deleteAllOpen={deleteAllOpen}
+        expenseCount={expenses.length}
+        isActionLoading={isActionLoading}
+        onExpenseDeleteOpenChange={(open) => {
           if (!open) setExpenseToDelete(null)
         }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir despesa?</AlertDialogTitle>
-            <AlertDialogDescription>
-              A despesa "{expenseToDelete?.nome}" será excluída. Essa ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <AlertDialogFooter className="flex justify-end gap-4 flex-row max-xs:justify-center bg-transparent border-0">
-            <AlertDialogCancel className="btn-cancel-w-max" disabled={isActionLoading}>Cancelar</AlertDialogCancel>
-
-            <AlertDialogAction
-              className="btn-danger-w-max"
-              onClick={() => void confirmDelete()}
-              disabled={isActionLoading}
-            >
-              {isActionLoading ? 'Excluindo...' : 'Excluir'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog
-        open={deleteAllOpen}
-        onOpenChange={setDeleteAllOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              Excluir todas as despesas?
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              As {expenses.length} despesas serão excluídas permanentemente.
-              Essa ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <AlertDialogFooter className="flex justify-end gap-4 flex-row max-xs:justify-center bg-transparent border-0">
-            <AlertDialogCancel className="btn-cancel-w-max" disabled={isActionLoading}>
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="btn-danger-w-max"
-              onClick={() => void confirmDeleteAll()}
-              disabled={isActionLoading}
-            >
-              {isActionLoading ? 'Excluindo...' : 'Excluir todas'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        onDeleteAllOpenChange={setDeleteAllOpen}
+        onConfirmDelete={confirmDelete}
+        onConfirmDeleteAll={confirmDeleteAll}
+      />
     </section>
   )
 }

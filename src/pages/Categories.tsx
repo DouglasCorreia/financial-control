@@ -1,28 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useFinancialStore } from '@/stores/useFinancialStore'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Card, CardContent } from '@/components/ui/card'
 import GlobalLoading from '@/components/GlobalLoading'
+import CategoryAlerts from '@/components/alerts/CategoryAlerts'
+import CategoryDialog from '@/components/modals/CategoryDialog'
 
 import { Trash2, Pencil, Plus } from 'lucide-react';
 
 import type { Category } from '@/types'
-
-const categorySchema = z.object({
-  nome: z.string().min(2, 'Informe o nome da categoria'),
-  cor: z.string().min(1, 'Escolha uma cor'),
-})
-
-type CategoryFormData = z.infer<typeof categorySchema>
+import type { CategoryFormData } from '@/schemas/category'
 
 export default function Categories() {
     const user = useAuthStore((state) => state.user)
@@ -34,18 +23,10 @@ export default function Categories() {
     const deleteCategory = useFinancialStore((state) => state.deleteCategory)
     const isLoading = useFinancialStore((state) => state.isLoading)
 
-    const [formOpen, setFormOpen] = useState(false)
+    const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
     const [editingCategory, setEditingCategory] = useState<Category | null>(null)
     const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null)
     const [isActionLoading, setIsActionLoading] = useState(false)
-
-    const { register, handleSubmit, reset, formState: { errors } } = useForm<CategoryFormData>({
-        resolver: zodResolver(categorySchema),
-        defaultValues: {
-            nome: '',
-            cor: '#22c55e',
-        },
-    })
 
     useEffect(() => {
         if (user) {
@@ -57,30 +38,18 @@ export default function Categories() {
         if (isActionLoading) return
 
         setEditingCategory(null)
-
-        reset({
-            nome: '',
-            cor: '#22c55e',
-        })
-
-        setFormOpen(true)
+        setCategoryDialogOpen(true)
     }
 
     const handleEdit = (category: Category) => {
         if (isActionLoading) return
 
         setEditingCategory(category)
-
-        reset({
-            nome: category.nome,
-            cor: category.cor ?? '#22c55e',
-        })
-
-        setFormOpen(true)
+        setCategoryDialogOpen(true)
     }
 
     const onSubmit = async (data: CategoryFormData) => {
-        if (!user || isActionLoading) return
+        if (!user || isActionLoading) return false
 
         setIsActionLoading(true)
 
@@ -97,10 +66,7 @@ export default function Categories() {
                     data.cor,
                 )
 
-            if (success) {
-                setFormOpen(false)
-                reset()
-            }
+            return success
         } finally {
             setIsActionLoading(false)
         }
@@ -190,104 +156,26 @@ export default function Categories() {
                 ))}
             </div>
 
-            <Dialog open={formOpen} onOpenChange={setFormOpen}>
-                <DialogContent className="card ring-0">
-                    <DialogHeader>
-                        <DialogTitle>
-                            {editingCategory
-                            ? 'Editar categoria'
-                            : 'Nova categoria'}
-                        </DialogTitle>
-
-                        <DialogDescription>
-                            Informe o nome e a cor da categoria.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="nome">Nome</Label>
-
-                            <Input
-                                className="input"
-                                id="nome"
-                                {...register('nome')}
-                            />
-
-                            {errors.nome && (
-                                <p className="text-sm text-destructive">
-                                    {errors.nome.message}
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="cor">Cor</Label>
-
-                            <Input
-                                className="
-                                input p-0 overflow-hidden [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-0 [&::-moz-color-swatch]:border-0"
-                                id="cor"
-                                type="color"
-                                {...register('cor')}
-                            />
-                        </div>
-
-                        <DialogFooter className="flex justify-end gap-4 flex-row max-xs:justify-center bg-transparent border-0">
-                            <Button
-                                type="button"
-                                onClick={() => setFormOpen(false)}
-                                disabled={isActionLoading}
-                                className="btn-cancel-w-max"
-                            >
-                                Cancelar
-                            </Button>
-
-                            <Button
-                                type="submit"
-                                className="btn-ok-w-max"
-                                disabled={isLoading || isActionLoading}
-                            >
-                                {isLoading || isActionLoading ? 'Salvando...' : 'Salvar'}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
-
-            <AlertDialog
-                open={categoryToDelete !== null}
+            <CategoryDialog
+                open={categoryDialogOpen}
                 onOpenChange={(open) => {
-                    if (!open) {
-                    setCategoryToDelete(null)
-                    }
+                    setCategoryDialogOpen(open)
+                    if (!open) setEditingCategory(null)
                 }}
-            >
-                    <AlertDialogContent className="card ring-0">
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>
-                                Atenção
-                            </AlertDialogTitle>
+                category={editingCategory}
+                isLoading={isLoading}
+                isActionLoading={isActionLoading}
+                onSubmit={onSubmit}
+            />
 
-                            <AlertDialogDescription>
-                                A categoria "{categoryToDelete?.nome}" será excluída.
-                                Essa ação não pode ser desfeita.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-
-                        <AlertDialogFooter className="flex justify-end gap-4 flex-row max-xs:justify-center bg-transparent border-0">
-                            <AlertDialogCancel className="btn-cancel-w-max" disabled={isActionLoading}>Cancelar</AlertDialogCancel>
-
-                            <AlertDialogAction
-                                onClick={() => void confirmDelete()}
-                                disabled={isActionLoading}
-                                className="btn-danger-w-max"
-                            >
-                                {isActionLoading ? 'Excluindo...' : 'Excluir'}
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-            </AlertDialog>
+            <CategoryAlerts
+                categoryToDelete={categoryToDelete}
+                isActionLoading={isActionLoading}
+                onOpenChange={(open) => {
+                    if (!open) setCategoryToDelete(null)
+                }}
+                onConfirmDelete={confirmDelete}
+            />
         </section>
     )
 }
