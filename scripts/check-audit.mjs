@@ -1,5 +1,8 @@
 import { readFileSync } from 'node:fs'
 
+const reportPath = process.env.NPM_AUDIT_REPORT ?? 'npm-audit-report.json'
+const auditExitCode = Number(process.env.NPM_AUDIT_EXIT_CODE ?? 0)
+
 const ignoredAdvisories = new Set([
   // This project uses BrowserRouter and does not use React Router RSC APIs.
   'GHSA-qwww-vcr4-c8h2',
@@ -8,7 +11,7 @@ const ignoredAdvisories = new Set([
 let report
 
 try {
-  const file = readFileSync('npm-audit-report.json')
+  const file = readFileSync(reportPath)
   const isUtf16Le = file[0] === 0xff && file[1] === 0xfe
   const content = isUtf16Le
     ? file.subarray(2).toString('utf16le')
@@ -16,11 +19,43 @@ try {
 
   report = JSON.parse(content)
 } catch {
-  console.error('Não foi possível ler o relatório do npm audit.')
+  console.error(`Não foi possível ler o relatório do npm audit em ${reportPath}.`)
   process.exit(1)
 }
 
-const vulnerabilities = report.vulnerabilities ?? {}
+if (!report || typeof report !== 'object' || Array.isArray(report)) {
+  console.error('O relatório do npm audit tem um formato inválido.')
+  process.exit(1)
+}
+
+if (report.error) {
+  console.error('O npm audit retornou um erro operacional:')
+  console.error(report.error.summary ?? report.error.message ?? report.error.code)
+  process.exit(1)
+}
+
+if (
+  !report.vulnerabilities ||
+  typeof report.vulnerabilities !== 'object' ||
+  Array.isArray(report.vulnerabilities)
+) {
+  console.error('O relatório do npm audit não contém a lista de vulnerabilidades.')
+  process.exit(1)
+}
+
+const vulnerabilities = report.vulnerabilities
+
+if (
+  !Number.isInteger(auditExitCode) ||
+  ![0, 1].includes(auditExitCode) ||
+  (auditExitCode === 1 &&
+    !Object.values(vulnerabilities).some((vulnerability) =>
+      ['high', 'critical'].includes(vulnerability.severity),
+    ))
+) {
+  console.error('O npm audit terminou com um código incompatível com o relatório.')
+  process.exit(1)
+}
 
 const hasIgnoredAdvisory = (item) => {
   if (!item || typeof item !== 'object') return false
