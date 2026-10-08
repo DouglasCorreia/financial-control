@@ -15,6 +15,7 @@ type ExpenseDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   expense?: Expense | null
+  initialExpense?: Expense | null
   categories: Category[]
   isLoading: boolean
   isActionLoading: boolean
@@ -37,6 +38,7 @@ export default function ExpenseDialog({
   open,
   onOpenChange,
   expense,
+  initialExpense,
   categories,
   isLoading,
   isActionLoading,
@@ -44,16 +46,16 @@ export default function ExpenseDialog({
 }: ExpenseDialogProps) {
   const form = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseSchema),
-    defaultValues: getDefaultValues(expense),
+    defaultValues: getDefaultValues(expense ?? initialExpense),
   })
   const { reset } = form
   const isEditing = Boolean(expense)
 
   useEffect(() => {
     if (open) {
-      reset(getDefaultValues(expense))
+      reset(getDefaultValues(expense ?? initialExpense))
     }
-  }, [expense, open, reset])
+  }, [expense, initialExpense, open, reset])
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (isActionLoading) return
@@ -220,3 +222,8 @@ export default function ExpenseDialog({
     </Dialog>
   )
 }
+
+
+
+
+

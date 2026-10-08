@@ -7,6 +7,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import GlobalLoading from '@/components/GlobalLoading'
 import CategoryAlerts from '@/components/alerts/CategoryAlerts'
 import CategoryDialog from '@/components/modals/CategoryDialog'
+import PageHeader from '@/components/page-header/PageHeader'
+import ActionButtonGroup from '@/components/action-button-group/ActionButtonGroup'
 
 import { Trash2, Pencil, Plus } from 'lucide-react';
 
@@ -94,19 +96,17 @@ export default function Categories() {
 
     return(
         <section className="w-full">
-            <div className="sm:flex items-end justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold">Categoria das despesas</h1>
-
-                    <p className="text-sm text-muted-foreground">Gerencie as categorias de suas despesas.</p>
-                </div>
-
-                <div className="mt-4 sm:mt-0 flex flex-wrap items-center justify-end md:justify-center gap-2">
-                    <Button className="btn-ok-w-max" type="button" onClick={handleCreate} disabled={isActionLoading || isLoading}>
-                        <Plus /> <span className="hidden md:inline">Categoria</span>
-                    </Button>
-                </div>
-            </div>
+            <PageHeader
+                title="Categoria das despesas"
+                description="Gerencie as categorias de suas despesas."
+                actions={(
+                    <ActionButtonGroup>
+                        <Button className="btn-ok-w-max" type="button" onClick={handleCreate} disabled={isActionLoading || isLoading}>
+                            <Plus /> <span className="hidden md:inline">Categoria</span>
+                        </Button>
+                    </ActionButtonGroup>
+                )}
+            />
 
             {isLoading && categories.length === 0 && (
                 <Card className="mt-4">
@@ -179,3 +179,4 @@ export default function Categories() {
         </section>
     )
 }
+

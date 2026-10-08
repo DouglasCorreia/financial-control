@@ -21,6 +21,7 @@ import { useFinancialStore } from '@/stores/useFinancialStore'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import GlobalLoading from '@/components/GlobalLoading'
+import PageHeader from '@/components/page-header/PageHeader'
 
 const monthNames = [
   'Jan',
@@ -162,12 +163,10 @@ export default function Dashboard() {
 
   return (
     <section className="w-full max-w-7xl space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold">Visão geral</h1>
-        <p className="text-muted-foreground">
-          Acompanhe sua vida financeira neste mês.
-        </p>
-      </header>
+      <PageHeader
+        title="Visão geral"
+        description="Acompanhe sua vida financeira neste mês."
+      />
 
       {error && (
         <p className="text-sm text-destructive">{error}</p>
@@ -375,3 +374,4 @@ export default function Dashboard() {
     </section>
   )
 }
+

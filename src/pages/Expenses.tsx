@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Check, Filter, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Check, Copy, Filter, Pencil, Plus, Trash2 } from 'lucide-react'
 
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useFinancialStore } from '@/stores/useFinancialStore'
@@ -22,6 +22,8 @@ import {
 } from '@/components/ui/pagination'
 
 import GlobalLoading from '@/components/GlobalLoading'
+import PageHeader from '@/components/page-header/PageHeader'
+import ActionButtonGroup from '@/components/action-button-group/ActionButtonGroup'
 
 const paymentStatusStyles: Record<
   string,
@@ -92,6 +94,7 @@ export default function Expenses() {
 
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
+  const [initialExpense, setInitialExpense] = useState<Expense | null>(null)
   const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null)
   const [deleteAllOpen, setDeleteAllOpen] = useState(false)
   const [deleteSelectedOpen, setDeleteSelectedOpen] = useState(false)
@@ -206,6 +209,14 @@ export default function Expenses() {
     if (isActionLoading) return
 
     setEditingExpense(null)
+    setExpenseDialogOpen(true)
+  }
+
+  const openDuplicateDialog = (expense: Expense) => {
+    if (isActionLoading) return
+
+    setEditingExpense(null)
+    setInitialExpense(expense)
     setExpenseDialogOpen(true)
   }
 
@@ -354,66 +365,62 @@ export default function Expenses() {
 
   return (
     <section className="w-full">
-      <div className="sm:flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Despesas</h1>
-          <p className="text-sm text-muted-foreground">
-            Gerencie suas despesas e seus pagamentos.
-          </p>
-        </div>
+      <PageHeader
+        title="Despesas"
+        description="Gerencie suas despesas e seus pagamentos."
+        actions={(
+          <ActionButtonGroup>
+            <Button
+              className="btn-danger-w-max"
+              type="button"
+              variant="destructive"
+              disabled={expenses.length === 0 || isLoading || isActionLoading}
+              onClick={() => setDeleteAllOpen(true)}
+            >
+              <Trash2 /> <span className="hidden md:inline">Excluir todas</span>
+            </Button>
 
-        <div className="mt-4 sm:mt-0 flex flex-wrap items-center justify-end md:justify-center gap-2">
-          <Button
-            className="btn-danger-w-max"
-            type="button"
-            variant="destructive"
-            disabled={expenses.length === 0 || isLoading || isActionLoading}
-            onClick={() => setDeleteAllOpen(true)}
-          >
-            <Trash2 /> <span className="hidden md:inline">Excluir todas</span>
-          </Button>
+            <Button
+              className="btn-danger-w-max"
+              type="button"
+              variant="destructive"
+              disabled={selectedExpenseIds.size === 0 || isLoading || isActionLoading}
+              onClick={() => setDeleteSelectedOpen(true)}
+              aria-label="Excluir despesas selecionadas"
+            >
+              <Trash2 />
+              <span className="hidden md:inline">Excluir selecionadas</span>
+              ({selectedExpenseIds.size})
+            </Button>
 
-          <Button
-            className="btn-danger-w-max"
-            type="button"
-            variant="destructive"
-            disabled={selectedExpenseIds.size === 0 || isLoading || isActionLoading}
-            onClick={() => setDeleteSelectedOpen(true)}
-            aria-label="Excluir despesas selecionadas"
-          >
-            <Trash2 />
-            <span className="hidden md:inline">
-              Excluir selecionadas
-            </span>
-            ({selectedExpenseIds.size})
-          </Button>
+            <Button
+              className="w-max btn-edit-w-max"
+              type="button"
+              disabled={isLoading || isActionLoading}
+              onClick={() => setFilterOpen(true)}
+            >
+              <Filter /> <span className="hidden md:inline">{hasActiveFilter ? 'Filtro ativo' : 'Filtrar'}</span>
+            </Button>
 
-          <Button
-            className="w-max btn-edit-w-max"
-            type="button"
-            disabled={isLoading || isActionLoading}
-            onClick={() => setFilterOpen(true)}
-          >
-            <Filter /> <span className="hidden md:inline">{hasActiveFilter ? 'Filtro ativo' : 'Filtrar'}</span>
-          </Button>
-
-          <Button
-            className="btn-ok-w-max"
-            type="button"
-            onClick={openCreateDialog}
-            disabled={isLoading || isActionLoading}
-          >
-            <Plus /> <span className="hidden md:inline">Despesa</span>
-          </Button>
-        </div>
-      </div>
-
+            <Button
+              className="btn-ok-w-max"
+              type="button"
+              onClick={openCreateDialog}
+              disabled={isLoading || isActionLoading}
+            >
+              <Plus /> <span className="hidden md:inline">Despesa</span>
+            </Button>
+          </ActionButtonGroup>
+        )}
+      />
       {error && (
         <p className="text-sm text-destructive">{error}</p>
       )}
 
       {expenses.length > 0 && (
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <h2 className="text-md font-semibold block w-full sm:col-span-2 md:col-span-3">Resumo dos gastos</h2>
+
           <Card
             className={`min-w-0 cursor-pointer transition-colors hover:ring-2 hover:ring-chateau-green-300 ${
               selectedMonth === 'all' ? 'ring-2 ring-chateau-green-400' : ''
@@ -497,6 +504,8 @@ export default function Expenses() {
       <div
         className={`grid gap-4 sm:grid-cols-2 md:grid-cols-3 ${filteredExpenses.length > 0 ? 'mt-4' : 'mt-0' }`}
       >
+        <h2 className="text-md font-semibold block w-full sm:col-span-2 md:col-span-3">Listagem de despesas</h2>
+
         {visibleExpenses.map((expense) => {
           const category = expense.categoria_id
             ? categoryById.get(expense.categoria_id)
@@ -565,7 +574,7 @@ export default function Expenses() {
                   </p>
                 )}
 
-                <div className="w-full grid grid-cols-2 gap-4">
+                <div className="w-full grid grid-cols-3 gap-4">
                   <Button
                     className="col-span-1 btn-edit"
                     type="button"
@@ -576,6 +585,15 @@ export default function Expenses() {
                     <Pencil />
                   </Button>
 
+                  <Button
+                    className="col-span-1 btn-edit"
+                    type="button"
+                    onClick={() => openDuplicateDialog(expense)}
+                    disabled={isLoading || isActionLoading}
+                    aria-label={`Duplicar ${expense.nome}`}
+                  >
+                    <Copy />
+                  </Button>
                   <Button
                     className="col-span-1 btn-danger"
                     type="button"
@@ -647,9 +665,13 @@ export default function Expenses() {
         open={expenseDialogOpen}
         onOpenChange={(open) => {
           setExpenseDialogOpen(open)
-          if (!open) setEditingExpense(null)
+          if (!open) {
+            setEditingExpense(null)
+            setInitialExpense(null)
+          }
         }}
         expense={editingExpense}
+        initialExpense={initialExpense}
         categories={categories}
         isLoading={isLoading}
         isActionLoading={isActionLoading}
@@ -691,3 +713,9 @@ export default function Expenses() {
     </section>
   )
 }
+
+
+
+
+
+
