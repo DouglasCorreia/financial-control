@@ -21,7 +21,7 @@ export default function AppLayout() {
   
   return (
     <div className="min-h-screen bg-muted/30">
-      <header className="sticky top-0 w-full border-b border-gray-200 bg-background py-4 z-10">
+      <header className="sticky top-0 w-full border-b border-gray-200 bg-background py-4 z-20">
         <div className="container flex items-center justify-between">
           <div 
             className="cursor-pointer"
