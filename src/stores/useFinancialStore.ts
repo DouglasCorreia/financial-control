@@ -2,7 +2,15 @@ import { create } from "zustand";
 import { supabase } from "@/services/supabase";
 import type { ExpenseInput, FinancialStore } from '@/types'
 
+let activeUserId: string | null = null
+
 export const useFinancialStore = create<FinancialStore>((set) => ({
+    setActiveUserId: (userId) => {
+        if (activeUserId === userId) return
+
+        activeUserId = userId
+        set({ salary: null, categories: [], expenses: [], isLoading: false, error: null })
+    },
     salary: null,
     categories: [],
     expenses: [],
@@ -21,6 +29,8 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
     },
 
     loadExpenses: async (userId) => {
+        if (activeUserId !== userId) return
+
         set({
             isLoading: true,
             error: null
@@ -33,6 +43,8 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
             .eq('user_id', userId)
             .order('data_gasto', { ascending: false });
 
+            if (activeUserId !== userId) return
+
             if (error) {
                 throw error
             }
@@ -42,6 +54,8 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
                 isLoading: false,
             })
         } catch (error) {
+            if (activeUserId !== userId) return
+
             set({
                 error: error instanceof Error ? error.message : 'Erro ao carregar despesas.',
                 isLoading: false,
@@ -50,6 +64,8 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
     },
 
     loadSalary: async (userId) => {
+        if (activeUserId !== userId) return
+
         set({
             isLoading: true,
             error: null,
@@ -60,6 +76,8 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
             .select('id, user_id, valor, created_at')
             .eq('user_id', userId)
             .maybeSingle()
+
+        if (activeUserId !== userId) return
 
         if (error) {
             set({
@@ -77,6 +95,8 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
     },
 
     saveSalary: async (userId, valor) => {
+        if (activeUserId !== userId) return
+
         set({
             isLoading: true,
             error: null,
@@ -96,6 +116,8 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
             .select('id, user_id, valor, created_at')
             .single()
 
+        if (activeUserId !== userId) return
+
         if (error) {
             set({
             isLoading: false,
@@ -112,6 +134,8 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
     },
 
     loadCategories: async (userId) => {
+        if (activeUserId !== userId) return
+
         set({ isLoading: true, error: null })
 
         const { data, error } = await supabase
@@ -119,6 +143,8 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
             .select('id, user_id, nome, cor, created_at')
             .eq('user_id', userId)
             .order('nome')
+
+        if (activeUserId !== userId) return
 
         if (error) {
             set({ isLoading: false, error: error.message })
@@ -133,6 +159,8 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
     },
 
     createCategory: async (userId, nome, cor) => {
+        if (activeUserId !== userId) return false
+
         const { data, error } = await supabase
             .from('categories')
             .insert({
@@ -142,6 +170,8 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
             })
             .select()
             .single()
+
+        if (activeUserId !== userId) return false
 
         if (error) {
             set({ error: error.message })
@@ -156,12 +186,17 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
      },
 
     updateCategory: async (id, nome, cor) => {
+        const requestUserId = activeUserId
+        if (!requestUserId) return false
+
         const { data, error } = await supabase
             .from('categories')
             .update({ nome, cor })
             .eq('id', id)
             .select()
             .single()
+
+        if (activeUserId !== requestUserId) return false
 
         if (error) {
             set({ error: error.message })
@@ -178,10 +213,15 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
     },
 
     deleteCategory: async (id) => {
+        const requestUserId = activeUserId
+        if (!requestUserId) return false
+
         const { error } = await supabase
             .from('categories')
             .delete()
             .eq('id', id)
+
+        if (activeUserId !== requestUserId) return false
 
         if (error) {
             set({ error: error.message })
@@ -197,6 +237,8 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
     },
 
     createExpense: async (userId, expense: ExpenseInput) => {
+        if (activeUserId !== userId) return false
+
         const { data, error } = await supabase
             .from('expenses')
             .insert({
@@ -205,6 +247,8 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
             })
             .select()
             .single()
+
+        if (activeUserId !== userId) return false
 
         if (error) {
             set({ error: error.message })
@@ -220,12 +264,17 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
     },
 
     updateExpense: async (id, expense: ExpenseInput) => {
+        const requestUserId = activeUserId
+        if (!requestUserId) return false
+
         const { data, error } = await supabase
             .from('expenses')
             .update(expense)
             .eq('id', id)
             .select()
             .single()
+
+        if (activeUserId !== requestUserId) return false
 
         if (error) {
             set({ error: error.message })
@@ -243,10 +292,15 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
     },
 
     deleteExpense: async (id) => {
+        const requestUserId = activeUserId
+        if (!requestUserId) return false
+
         const { error } = await supabase
             .from('expenses')
             .delete()
             .eq('id', id)
+
+        if (activeUserId !== requestUserId) return false
 
         if (error) {
             set({ error: error.message })
@@ -262,10 +316,14 @@ export const useFinancialStore = create<FinancialStore>((set) => ({
     },
 
     deleteAllExpenses: async (userId) => {
+        if (activeUserId !== userId) return false
+
         const { error } = await supabase
             .from('expenses')
             .delete()
             .eq('user_id', userId)
+
+        if (activeUserId !== userId) return false
 
         if (error) {
             set({ error: error.message })

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { supabase } from '@/services/supabase'
+import { useFinancialStore } from '@/stores/useFinancialStore'
 import type { AuthStore } from '@/types'
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -11,6 +12,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   initialize: async () => {
     const { data: { session }} = await supabase.auth.getSession()
+    useFinancialStore.getState().setActiveUserId(session?.user.id ?? null)
 
     let profile = null
 
@@ -38,6 +40,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      useFinancialStore.getState().setActiveUserId(nextSession?.user.id ?? null)
       set({
         session: nextSession,
         user: nextSession?.user ?? null,
@@ -65,6 +68,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
       return false
     }
+
+    useFinancialStore.getState().setActiveUserId(data.user.id)
 
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
@@ -114,6 +119,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     }
 
     if (data.user && data.session) {
+      useFinancialStore.getState().setActiveUserId(data.user.id)
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .upsert(
@@ -159,6 +165,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     set({
       session: null,
       user: null,
+      profile: null,
       error: null,
     })
   },

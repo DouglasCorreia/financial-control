@@ -38,6 +38,7 @@ export type ExpenseInput = Pick<
 >
 
 export type FinancialStore = {
+  setActiveUserId: (userId: string | null) => void
   salary: Salary | null
   categories: Category[]
   expenses: Expense[]

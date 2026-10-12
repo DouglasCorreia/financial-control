@@ -1,5 +1,5 @@
 ---
-name: Financial Control
+name: Save money
 colors:
   background: 'oklch(1 0 0)'
   foreground: 'oklch(0.145 0 0)'
@@ -35,11 +35,11 @@ breakpoints:
   xl: 1200px
 ---
 
-# Design System — Financial Control
+# Design System — Save Money
 
 ## Produto e personalidade
 
-O Financial Control é uma aplicação web em português para organizar salário, despesas, categorias e pagamentos. A interface deve transmitir clareza, controle e segurança: mostrar rapidamente quanto entrou, quanto foi gasto e o que ainda precisa de atenção.
+O Save Money é uma aplicação web em português para organizar salário, despesas, categorias e pagamentos. A interface deve transmitir clareza, controle e segurança: mostrar rapidamente quanto entrou, quanto foi gasto e o que ainda precisa de atenção.
 
 O visual existente combina componentes administrativos compactos com cartões de resumo e gráficos. Priorize leitura rápida e ações previsíveis. Evite ornamentos, cores decorativas sem significado e mudanças visuais amplas dentro de tarefas funcionais.
 

@@ -1,4 +1,4 @@
-# Financial Control
+# Save Money
 
 Aplicação web para controle financeiro pessoal. O usuário pode cadastrar seu salário, organizar despesas por categorias, acompanhar pagamentos e visualizar um resumo da sua vida financeira por meio de cards e gráficos.
 
@@ -72,18 +72,6 @@ Aplicação web para controle financeiro pessoal. O usuário pode cadastrar seu 
 - [Supabase](https://supabase.com/) para autenticação e banco PostgreSQL
 - Row Level Security (RLS) para isolamento dos dados por usuário
 - [Recharts](https://recharts.org/) para gráficos do dashboard
-
-## Estrutura de dados
-
-O projeto utiliza as seguintes tabelas principais no Supabase:
-
-- `auth.users`: usuários gerenciados pelo Supabase Auth.
-- `profiles`: nome e dados complementares do usuário.
-- `salaries`: salário mensal do usuário.
-- `categories`: categorias de despesas, com nome e cor.
-- `expenses`: despesas, valores, datas, categorias e status de pagamento.
-
-As despesas, categorias e salários são vinculados ao usuário autenticado por meio do `user_id`. As políticas RLS devem garantir que cada usuário consiga consultar e modificar somente os próprios registros.
 
 ## Status do projeto
 
