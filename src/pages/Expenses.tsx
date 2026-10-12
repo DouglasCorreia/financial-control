@@ -354,10 +354,13 @@ export default function Expenses() {
     setCurrentPage(1)
   }
 
-  const hasActiveFilter =
-    selectedMonth !== 'all' ||
-    selectedCategoryId !== 'all' ||
-    selectedPaymentStatus !== 'all'
+  const activeFilterCount = [
+    selectedMonth !== 'all',
+    selectedCategoryId !== 'all',
+    selectedPaymentStatus !== 'all',
+  ].filter(Boolean).length
+
+  const hasActiveFilter = activeFilterCount > 0
 
   if (isLoading) {
     return <GlobalLoading />
@@ -399,7 +402,7 @@ export default function Expenses() {
               disabled={isLoading || isActionLoading}
               onClick={() => setFilterOpen(true)}
             >
-              <Filter /> <span className="hidden md:inline">{hasActiveFilter ? 'Filtro ativo' : 'Filtrar'}</span>
+              <Filter /> <span className="hidden md:inline">Filtros ({activeFilterCount})</span>
             </Button>
 
             <Button
