@@ -12,6 +12,7 @@ module.exports = {
           module: 'CommonJS',
           moduleResolution: 'Node',
           types: ['jest', 'vite/client'],
+          jsx: 'react-jsx',
           verbatimModuleSyntax: false,
         },
       },

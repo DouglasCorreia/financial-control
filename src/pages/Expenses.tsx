@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Check, Copy, Filter, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Copy, Filter, Pencil, Plus, Trash2 } from 'lucide-react'
 
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useFinancialStore } from '@/stores/useFinancialStore'
@@ -24,6 +24,7 @@ import {
 import GlobalLoading from '@/components/GlobalLoading'
 import PageHeader from '@/components/page-header/PageHeader'
 import ActionButtonGroup from '@/components/action-button-group/ActionButtonGroup'
+import ExpenseSelectionCheckbox from '@/components/expenses/ExpenseSelectionCheckbox'
 
 const paymentStatusStyles: Record<
   string,
@@ -524,25 +525,11 @@ export default function Expenses() {
               key={expense.id}
               className={`relative justify-start ${isSelected ? 'ring-2 ring-chateau-green-400' : ''}`}
             >
-              <label className="absolute right-4 top-4 z-10 flex cursor-pointer items-center">
-                <input
-                  type="checkbox"
-                  className="peer sr-only"
-                  checked={isSelected}
-                  onChange={() => toggleExpenseSelection(expense.id)}
-                  aria-label={`Selecionar ${expense.nome} para exclusão`}
-                />
-                <span
-                  aria-hidden="true"
-                  className={`flex size-5 items-center justify-center rounded-sm border-2 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-chateau-green-300 ${
-                    isSelected
-                      ? 'border-chateau-green-400 bg-chateau-green-400'
-                      : 'border-gray-300 bg-white'
-                  }`}
-                >
-                  {isSelected && <Check className="size-4 text-white" strokeWidth={3} />}
-                </span>
-              </label>
+              <ExpenseSelectionCheckbox
+                checked={isSelected}
+                label={`Selecionar ${expense.nome} para exclusão`}
+                onChange={() => toggleExpenseSelection(expense.id)}
+              />
 
               <CardHeader className="flex flex-wrap flex-row items-start justify-between gap-4 space-y-0">
                 <div className="w-full">
