@@ -1,5 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { useThemeStore } from '@/stores/useThemeStore'
 
 import Login from '@/pages/Login'
 import Dashboard from '@/pages/Dashboard'
@@ -16,6 +17,11 @@ import Expenses from './pages/Expenses'
 function App() {
   const initialize = useAuthStore((state) => state.initialize)
   const user = useAuthStore((state) => state.user)
+  const theme = useThemeStore((state) => state.theme)
+
+  useLayoutEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark')
+  }, [theme])
 
   useEffect(() => {
     let cleanup: (() => void) | undefined
