@@ -19,6 +19,7 @@ export default function ExpenseViewToggle({ value, onChange }: ExpenseViewToggle
         aria-label="Visualização em cartões"
         aria-pressed={value === 'cards'}
         onClick={() => onChange('cards')}
+        className="cursor-pointer"
       >
         <LayoutGrid aria-hidden="true" />
       </Button>
@@ -29,6 +30,7 @@ export default function ExpenseViewToggle({ value, onChange }: ExpenseViewToggle
         aria-label="Visualização em lista"
         aria-pressed={value === 'list'}
         onClick={() => onChange('list')}
+        className="cursor-pointer"
       >
         <List aria-hidden="true" />
       </Button>
