@@ -25,6 +25,7 @@ import GlobalLoading from '@/components/GlobalLoading'
 import PageHeader from '@/components/page-header/PageHeader'
 import ActionButtonGroup from '@/components/action-button-group/ActionButtonGroup'
 import ExpenseSelectionCheckbox from '@/components/expenses/ExpenseSelectionCheckbox'
+import ExpenseViewToggle, { type ExpenseView } from '@/components/expenses/ExpenseViewToggle'
 
 const paymentStatusStyles: Record<
   string,
@@ -108,6 +109,7 @@ export default function Expenses() {
   const [selectedPaymentStatus, setSelectedPaymentStatus] = useState('all')
   const [isActionLoading, setIsActionLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [expenseView, setExpenseView] = useState<ExpenseView>('cards')
 
   const salaryValue = salary ? Number(salary.valor) : null
 
@@ -487,28 +489,11 @@ export default function Expenses() {
         </div>
       )}
 
-      {isLoading && expenses.length === 0 && (
-        <Card className="mt-4">
-            <CardContent className="text-center text-muted-foreground">
-                Carregando despesas...
-            </CardContent>
-        </Card>
-      )}
-
-      {!isLoading && filteredExpenses.length === 0 && (
-        <Card className="mt-4">
-          <CardContent className="text-center text-muted-foreground">
-            {expenses.length === 0
-              ? 'Nenhuma despesa cadastrada.'
-              : 'Nenhuma despesa encontrada com os filtros selecionados.'}
-          </CardContent>
-        </Card>
-      )}
-
-      <div
-        className={`grid gap-4 sm:grid-cols-2 md:grid-cols-3 ${filteredExpenses.length > 0 ? 'mt-4' : 'mt-0' }`}
-      >
-        <h2 className="text-md font-semibold block w-full sm:col-span-2 md:col-span-3">Listagem de despesas</h2>
+      <div className={`mt-4 ${expenseView === 'cards' && visibleExpenses.length > 0 ? 'grid gap-4 sm:grid-cols-2 md:grid-cols-3' : 'flex flex-col gap-3'}`}>
+        <div className={`flex items-center justify-between gap-3 ${expenseView === 'cards' && visibleExpenses.length > 0 ? 'sm:col-span-2 md:col-span-3' : ''}`}>
+          <h2 className="text-md font-semibold">Listagem de despesas</h2>
+          <ExpenseViewToggle value={expenseView} onChange={setExpenseView} />
+        </div>
 
         {visibleExpenses.map((expense) => {
           const category = expense.categoria_id
@@ -523,7 +508,7 @@ export default function Expenses() {
           return (
             <Card
               key={expense.id}
-              className={`relative justify-start ${isSelected ? 'ring-2 ring-chateau-green-400' : ''}`}
+              className={`relative justify-start ${expenseView === 'list' ? 'flex flex-col gap-3 p-4 md:flex-row md:items-center md:gap-6' : ''} ${isSelected ? 'ring-2 ring-chateau-green-400' : ''}`}
             >
               <ExpenseSelectionCheckbox
                 checked={isSelected}
@@ -531,7 +516,7 @@ export default function Expenses() {
                 onChange={() => toggleExpenseSelection(expense.id)}
               />
 
-              <CardHeader className="flex flex-wrap flex-row items-start justify-between gap-4 space-y-0">
+              <CardHeader className={`flex flex-wrap flex-row items-start justify-between gap-4 space-y-0 ${expenseView === 'list' ? '!p-0 md:min-w-0 md:flex-1' : ''}`}>
                 <div className="w-full">
                   <div className='w-full md:w-[60%] flex flex-wrap max-sm:flex-col items-start md:items-center gap-2'>
                     <span
@@ -549,7 +534,7 @@ export default function Expenses() {
                     </span>
                   </div>
 
-                  <CardTitle className="font-bold text-lg my-4 leading-none">{expense.nome}</CardTitle>
+                  <CardTitle className={`font-bold text-lg leading-none ${expenseView === 'list' ? 'my-2' : 'my-4'}`}>{expense.nome}</CardTitle>
 
                   <p className="text-lg font-bold leading-none m-0">
                     {formatCurrency(expense.valor)}
@@ -557,16 +542,16 @@ export default function Expenses() {
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-2">
+              <CardContent className={`space-y-2 ${expenseView === 'list' ? '!p-0 md:w-[36%] md:shrink-0' : ''}`}>
                 {expense.descricao && (
                   <p className="text-xs text-muted-foreground">
                     {expense.descricao}
                   </p>
                 )}
 
-                <div className="w-full grid grid-cols-3 gap-4">
+                <div className={`grid w-full grid-cols-3 ${expenseView === 'list' ? 'gap-2' : 'gap-4'}`}>
                   <Button
-                    className="col-span-1 btn-edit"
+                    className={`col-span-1 btn-edit ${expenseView === 'list' ? '!h-8 md:!h-6 !px-1' : ''}`}
                     type="button"
                     onClick={() => openEditDialog(expense)}
                     disabled={isLoading || isActionLoading}
@@ -585,7 +570,7 @@ export default function Expenses() {
                     <Copy />
                   </Button>
                   <Button
-                    className="col-span-1 btn-danger"
+                    className={`col-span-1 btn-danger ${expenseView === 'list' ? '!h-8 md:!h-6 !px-1' : ''}`}
                     type="button"
                     onClick={() => setExpenseToDelete(expense)}
                     disabled={isLoading || isActionLoading}
@@ -599,6 +584,24 @@ export default function Expenses() {
           )
         })}
       </div>
+
+      {isLoading && expenses.length === 0 && (
+        <Card className="mt-4">
+            <CardContent className="text-center text-muted-foreground">
+                Carregando despesas...
+            </CardContent>
+        </Card>
+      )}
+
+      {!isLoading && filteredExpenses.length === 0 && (
+        <Card className="mt-4">
+          <CardContent className="text-center text-muted-foreground">
+            {expenses.length === 0
+              ? 'Nenhuma despesa cadastrada.'
+              : 'Nenhuma despesa encontrada com os filtros selecionados.'}
+          </CardContent>
+        </Card>
+      )}
 
       {totalPages > 1 && (
         <div className="mt-6 space-y-3">
