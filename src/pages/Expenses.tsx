@@ -11,21 +11,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import ExpenseAlerts from '@/components/alerts/ExpenseAlerts'
 import ExpenseDialog from '@/components/modals/ExpenseDialog'
 import ExpenseFiltersDialog from '@/components/modals/ExpenseFiltersDialog'
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination'
-
 import GlobalLoading from '@/components/GlobalLoading'
 import PageHeader from '@/components/page-header/PageHeader'
 import ActionButtonGroup from '@/components/action-button-group/ActionButtonGroup'
 import ExpenseSelectionCheckbox from '@/components/expenses/ExpenseSelectionCheckbox'
 import ExpenseViewToggle, { type ExpenseView } from '@/components/expenses/ExpenseViewToggle'
+import { PaginationControls } from '@/components/pagination/PaginationControls'
 
 const paymentStatusStyles: Record<
   string,
@@ -173,32 +164,6 @@ export default function Expenses() {
     return filteredExpenses.slice(start, start + ITEMS_PER_PAGE)
   }, [activePage, filteredExpenses])
 
-  const pageNumbers = useMemo(() => {
-    if (totalPages <= 7) {
-      return Array.from({ length: totalPages }, (_, index) => index + 1)
-    }
-
-    const pages: Array<number | 'ellipsis-left' | 'ellipsis-right'> = [1]
-
-    if (activePage > 4) {
-      pages.push('ellipsis-left')
-    }
-
-    const firstVisiblePage = Math.max(2, activePage - 1)
-    const lastVisiblePage = Math.min(totalPages - 1, activePage + 1)
-
-    for (let page = firstVisiblePage; page <= lastVisiblePage; page += 1) {
-      pages.push(page)
-    }
-
-    if (activePage < totalPages - 3) {
-      pages.push('ellipsis-right')
-    }
-
-    pages.push(totalPages)
-
-    return pages
-  }, [activePage, totalPages])
 
   useEffect(() => {
     if (!user) return
@@ -603,57 +568,15 @@ export default function Expenses() {
         </Card>
       )}
 
-      {totalPages > 1 && (
-        <div className="mt-6 space-y-3">
-          <p className="text-center text-sm text-muted-foreground">
-            Mostrando {(activePage - 1) * ITEMS_PER_PAGE + 1} a{' '}
-            {Math.min(activePage * ITEMS_PER_PAGE, filteredExpenses.length)} de{' '}
-            {filteredExpenses.length} despesas
-          </p>
-
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  type="button"
-                  className="text-chateau-green-500 hover:text-chateau-green-600 cursor-pointer"
-                  disabled={activePage === 1 || isActionLoading}
-                  onClick={() => setCurrentPage(activePage - 1)}
-                />
-              </PaginationItem>
-
-              {pageNumbers.map((page) => (
-                <PaginationItem key={page}>
-                  {typeof page === 'number' ? (
-                    <PaginationLink
-                      type="button"
-                      className="text-chateau-green-400 hover:text-chateau-green-500 border-chateau-green-500 bg-transparent cursor-pointer"
-                      isActive={page === activePage}
-                      disabled={isActionLoading}
-                      onClick={() => setCurrentPage(page)}
-                      aria-label={`Ir para a página ${page}`}
-                    >
-                      {page}
-                    </PaginationLink>
-                  ) : (
-                    <PaginationEllipsis />
-                  )}
-                </PaginationItem>
-              ))}
-
-              <PaginationItem>
-                <PaginationNext
-                  type="button"
-                  className="text-chateau-green-500 hover:text-chateau-green-600 cursor-pointer"
-                  disabled={activePage === totalPages || isActionLoading}
-                  onClick={() => setCurrentPage(activePage + 1)}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
-
+      <PaginationControls
+        currentPage={activePage}
+        totalPages={totalPages}
+        totalItems={filteredExpenses.length}
+        itemsPerPage={ITEMS_PER_PAGE}
+        itemLabel="despesas"
+        disabled={isActionLoading}
+        onPageChange={setCurrentPage}
+      />
       <ExpenseDialog
         open={expenseDialogOpen}
         onOpenChange={(open) => {
